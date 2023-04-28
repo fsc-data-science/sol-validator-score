@@ -1,0 +1,109 @@
+| Table | Column | Definition |
+|-------|--------|------------|
+| silver__historical_stake_account | epoch_ingested_at | Epoch number for when data was ingested |
+| silver__historical_stake_account | authorized_staker | Account responsible for signing stake delegations/deactivativations transactions |
+| silver__historical_stake_account | authorized_withdrawer | Account responsible for signing stake withdrawal transactions |
+| silver__historical_stake_account | lockup | Lockup information when tokens can be withdrawn |
+| silver__historical_stake_account | rent_exempt_reserve | Minimum SOL balance that must be maintained for this account to remain rent exempt |
+| silver__historical_stake_account | credits_observed | Credits observed for the validator |
+| silver__historical_stake_account | activation_epoch | Epoch when stake was activated |
+| silver__historical_stake_account | deactivation_epoch | Epoch when stake will be deactivated |
+| silver__historical_stake_account | active_stake | Amount staked in SOL |
+| silver__historical_stake_account | voter | Vote account of the validator this stake is delegated to |
+| silver__historical_stake_account | warmup_cooldown_rate | Rate at which stake can be activated/deactivated |
+| silver__historical_stake_account | type_stake | Status of the stake |
+| silver__historical_stake_account | program | The type of account |
+| silver__historical_stake_account | account_sol | SOL held in this account |
+| silver__historical_stake_account | rent_epoch | Epoch at which this account will next owe rent |
+| silver__historical_stake_account | stake_pubkey | Address of stake account |
+| silver__historical_validator_app_data | file_date | Date when data was collected |
+| silver__historical_validator_app_data | node_pubkey | Account for the validator node |
+| silver__historical_validator_app_data | active_stake | Active stake in SOL delegated to the validator |
+| silver__historical_validator_app_data | admin_warning | Admin warning for the validator |
+| silver__historical_validator_app_data | authorized_withdrawer_score | validator.app score for Authorized withdrawer |
+| silver__historical_validator_app_data | avatar_url | URL of avatar image |
+| silver__historical_validator_app_data | commission | % of rewards payout to the vote account |
+| silver__historical_validator_app_data | consensus_mods_score | validator.app score Consensus modifications |
+| silver__historical_validator_app_data | created_at | date when validator was created |
+| silver__historical_validator_app_data | data_center_concentration_score | validator.app score  for Data center concentration score |
+| silver__historical_validator_app_data | data_center_key | Identifier for the data center |
+| silver__historical_validator_app_data | data_center_host | Host for the data center |
+| silver__historical_validator_app_data | delinquent | Status whether the validator is offline/delinquent |
+| silver__historical_validator_app_data | details | Details for the validator |
+| silver__historical_validator_app_data | epoch_active | Last epoch when vote account was active |
+| silver__historical_validator_app_data | epoch_credits | Epoch credits for the validator |
+| silver__historical_validator_app_data | keybase_id | Keybase ID for the validator |
+| silver__historical_validator_app_data | latitude | Latitude coordinates of data center |
+| silver__historical_validator_app_data | longitude | Longitude coordinates of data center |
+| silver__historical_validator_app_data | validator_name | Name of the validator |
+| silver__historical_validator_app_data | published_information_score | validator.app score for Published information |
+| silver__historical_validator_app_data | root_distance_score | validator.app score for Root distance |
+| silver__historical_validator_app_data | security_report_score | validator.app score for Security |
+| silver__historical_validator_app_data | skipped_slot_score | validator.app score for Skipped slots |
+| silver__historical_validator_app_data | software_version | Solana mainnet version |
+| silver__historical_validator_app_data | software_version_score | validator.app score for Software version |
+| silver__historical_validator_app_data | stake_concentration_score | validator.app score for Stake concentration score |
+| silver__historical_validator_app_data | total_score | validator.app score total score |
+| silver__historical_validator_app_data | updated_at | Last date validator was updated |
+| silver__historical_validator_app_data | vote_pubkey | Vote account for the validator |
+| silver__historical_validator_app_data | vote_distance_score | validator.app score for Vote distance |
+| silver__historical_validator_app_data | www_url | URL for the validator |
+| silver__historical_vote_account | epoch_ingested_at | Epoch number for when data was ingested |
+| silver__historical_vote_account | authorized_voter | Account responsible for signing vote transactions |
+| silver__historical_vote_account | epoch | Last epoch when vote account was active |
+| silver__historical_vote_account | authorized_withdrawer | Account responsible for signing stake withdrawal transactions |
+| silver__historical_vote_account | commission | % of rewards payout to the vote account |
+| silver__historical_vote_account | epoch_credits | Credits earned by the end of epochs, containing epoch/credits/previous credits |
+| silver__historical_vote_account | last_timestamp_slot | Last slot voted on |
+| silver__historical_vote_account | last_timestamp | The timestamp when last slot was voted on |
+| silver__historical_vote_account | node_pubkey | Pubkey for the Solana validator node |
+| silver__historical_vote_account | prior_voters | Prior voters for the vote account |
+| silver__historical_vote_account | root_slot | Latest slot confirmed |
+| silver__historical_vote_account | votes | Votes during epoch |
+| silver__historical_vote_account | account_sol | SOL assigned to this account |
+| silver__historical_vote_account | owner | Program account that owns the vote account |
+| silver__historical_vote_account | rent_epoch | Epoch at which this account will next owe rent |
+| silver__historical_vote_account | vote_pubkey | Public key for the vote account |
+| silver__snapshot_validators_app_data | epoch_recorded | The epoch when data was recorded |
+| silver__snapshot_validators_app_data | node_pubkey | Account for the validator node |
+| silver__snapshot_validators_app_data | active_stake | Active stake in SOL delegated to the validator |
+| silver__snapshot_validators_app_data | admin_warning | Admin warning for the validator |
+| silver__snapshot_validators_app_data | authorized_withdrawer_score | validator.app score for Authorized withdrawer |
+| silver__snapshot_validators_app_data | avatar_url | URL of avatar image |
+| silver__snapshot_validators_app_data | commission | % of rewards payout to the vote account |
+| silver__snapshot_validators_app_data | consensus_mods_score | validator.app score Consensus modifications |
+| silver__snapshot_validators_app_data | created_at | Date when validator was created |
+| silver__snapshot_validators_app_data | data_center_concentration_score | validator.app score  for Data center concentration score |
+| silver__snapshot_validators_app_data | data_center_key | Identifier for the data center |
+| silver__snapshot_validators_app_data | data_center_host | Host for the data center |
+| silver__snapshot_validators_app_data | delinquent | Status whether the validator is offline/delinquent |
+| silver__snapshot_validators_app_data | details | Details for the validator |
+| silver__snapshot_validators_app_data | epoch_active | Last epoch when vote account was active |
+| silver__snapshot_validators_app_data | epoch_credits | Epoch credits for the validator |
+| silver__snapshot_validators_app_data | keybase_id | Keybase ID for the validator |
+| silver__snapshot_validators_app_data | latitude | Latitude coordinates of data center |
+| silver__snapshot_validators_app_data | longitude | Longitude coordinates of data center |
+| silver__snapshot_validators_app_data | validator_name | Name of the validator |
+| silver__snapshot_validators_app_data | published_information_score | validator.app score for Published information |
+| silver__snapshot_validators_app_data | root_distance_score | validator.app score for Root distance |
+| silver__snapshot_validators_app_data | security_report_score | validator.app score for Security |
+| silver__snapshot_validators_app_data | skipped_slot_score | validator.app score for Skipped slots |
+| silver__snapshot_validators_app_data | software_version | Solana mainnet version |
+| silver__snapshot_validators_app_data | software_version_score | validator.app score for Software version |
+| silver__snapshot_validators_app_data | stake_concentration_score | validator.app score for Stake concentration score |
+| silver__snapshot_validators_app_data | total_score | validator.app score total score |
+| silver__snapshot_validators_app_data | updated_at | Last date validator was updated |
+| silver__snapshot_validators_app_data | vote_pubkey | Vote account for the validator |
+| silver__snapshot_validators_app_data | vote_distance_score | validator.app score for Vote distance |
+| silver__snapshot_validators_app_data | www_url | URL for the validator |
+| silver__snapshot_validators_app_data | _INSERTED_TIMESTAMP | Timestamp when the data was inserted |
+| silver__snapshot_vote_accounts | epoch_recorded      | The epoch when data was recorded                                                             |
+| silver__snapshot_vote_accounts | active_stake        | The activated stake in SOL delegated to the vote account in this epoch                      |
+| silver__snapshot_vote_accounts | commission          | % of rewards payout to the vote account                                                      |
+| silver__snapshot_vote_accounts | epoch_credits       | Credits earned by the end of epochs, containing epoch/credits/previous credits               |
+| silver__snapshot_vote_accounts | epoch_vote_account  | Whether the vote account is staked for this epoch                                            |
+| silver__snapshot_vote_accounts | last_vote           | Most recent slot voted on by the vote account                                                |
+| silver__snapshot_vote_accounts | node_pubkey         | pubkey for the Solana validator node                                                         |
+| silver__snapshot_vote_accounts | root_slot           | latest slot confirmed                                                                        |
+| silver__snapshot_vote_accounts | vote_pubkey         | The vote account address                                                                     |
+| silver__snapshot_vote_accounts | _inserted_timestamp | The inserted timestamp                                                                       |
