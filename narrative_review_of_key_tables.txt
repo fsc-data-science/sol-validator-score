@@ -1,0 +1,54 @@
+NOTE: Everything in the first few slides is incorrectly framed.
+
+It is the VOTER pubkey that validates.
+SIMPLE: Stake_Pubkey "A" is owned by Authorized_Staker "Alice" who is also the withdrawer and custodian of "A".
+
+Complicated: Stake Pubkey "B" is owned by Authorized Staker "Bob Inc", with the withdrawer as "Bob" and custodian of "Bob's future Holders Co".
+
+Both "A" and "B" (as staker pubkeys) are delegating to Voter 2Y2.... (120 and 5000 respectively).
+"A" activated in epoch 300 and has a planned deactivation in epoch 400
+"B" has an activated at 320 and has no deactivation (i.e., max 1844,...,...15)
+
+While judging Voter 2Y2 as a validator: 
+ - # & Ratio of Simple to Complicated stakers
+
+ - # & Ratio of Deactivation Planned vs not 
+ - # & Ratio of expected lifecycle/churn of deactivations
+   -- % of stakers that left in last x epochs; % of stakers that re-delegated to a different voter
+
+ - Ratio of Staker Locks (most staked are not locked, some are though)
+	
+- total SOL delegated (sum account_sol from stakers) / avg / median sol delegated
+ - GINI coefficient of delegators (mostly whales or many small fries) 
+ - ratio of total account_sol / total activate_stake ??
+
+Validators over time:
+ - credit growth (variance, direction, etc. drops to 0)
+ 
+Questions for Foundation
+- Are we thinking of Validator right (VOTE_PUBKEY) or should we instead think of NODE_PUBKEY or other?
+- Are planned deactivations relevant or are they artifacts? 
+
+Tim: 
+ - Rent Exempt vs Rent Epoch 
+ - Credits Observed (drops to zero for certain stakers/voters - is this bad? why?) 
+ - Does "Credits Observed" at the "Staker" level, actually make sense? 
+
+----------------------------------------
+
+- Credits Observed are best thought of as a measure of how far into an epoch a staker joins a voter (e.g., 20% of the way through the epoch will only have 80% of that voter epoch credits matched to that staker)
+- For a voter in the snapshot vote account table the active_stake at epoch X is ROUGHLY equal to the total active stake among all stakers to that voter minus the active stake of all stakers with a deactivation epoch equal to or less than X. This means for historical vote account, we can impute active stake at each epoch E[i] as the sum of activated minus deactivated stakes up to i. 
+- EPOCH_INGESTED_AT within the historical vote account is the epoch of the data; while `EPOCH` is the last active epoch for that voter. This means inactive voters can bloat the data with inactive stake. Need to check for active and reactivates.
+  IF epoch_ingested = epoch THEN voter was active in epoch_ingested
+   ELSE IF (epoch_ingested - epoch) = 1 deactivates in epoch_ingested
+   ELSE (epoch_ingested - epoch) > 1 currently_deactive
+ IF back to back deactivated (voter might have deactivated, then reactivated in the same epoch between ingest timestamps?)
+
+
+@ Tarik to update snapshot_vote_accounts to match RPC of historic_vote_accounts
+  - could keep it as snapshot_vote_status 2nd RPC has special notes: epoch_status (deliquent vs current), active_stake, COMMISSION, EPOCH_VOTE_ACOUNT (FALSE/TRUE), LAST_VOTE (similar to root slot but root slot precedes it slightly) 
+
+
+
+ 
+ 
