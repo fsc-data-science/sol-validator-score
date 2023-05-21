@@ -33,20 +33,28 @@ Tim:
  - Rent Exempt vs Rent Epoch 
  - Credits Observed (drops to zero for certain stakers/voters - is this bad? why?) 
  - Does "Credits Observed" at the "Staker" level, actually make sense? 
+	- 
 
 ----------------------------------------
 
-- Credits Observed are best thought of as a measure of how far into an epoch a staker joins a voter (e.g., 20% of the way through the epoch will only have 80% of that voter epoch credits matched to that staker)
+- No, credits observed is not at the staker level. Staker level differences are errors.
+- Although, different voters in the same Epoch can have different credits observed even at full participation.
+
 - For a voter in the snapshot vote account table the active_stake at epoch X is ROUGHLY equal to the total active stake among all stakers to that voter minus the active stake of all stakers with a deactivation epoch equal to or less than X. This means for historical vote account, we can impute active stake at each epoch E[i] as the sum of activated minus deactivated stakes up to i. 
 - EPOCH_INGESTED_AT within the historical vote account is the epoch of the data; while `EPOCH` is the last active epoch for that voter. This means inactive voters can bloat the data with inactive stake. Need to check for active and reactivates.
   IF epoch_ingested = epoch THEN voter was active in epoch_ingested
-   ELSE IF (epoch_ingested - epoch) = 1 deactivates in epoch_ingested
+   ELSE IF (epoch_ingested - epoch) = 1 deactivates in epoch_ingested (or data missing but in aggregate should be roughly accurate)
    ELSE (epoch_ingested - epoch) > 1 currently_deactive
  IF back to back deactivated (voter might have deactivated, then reactivated in the same epoch between ingest timestamps?)
 
-
 @ Tarik to update snapshot_vote_accounts to match RPC of historic_vote_accounts
   - could keep it as snapshot_vote_status 2nd RPC has special notes: epoch_status (deliquent vs current), active_stake, COMMISSION, EPOCH_VOTE_ACOUNT (FALSE/TRUE), LAST_VOTE (similar to root slot but root slot precedes it slightly) 
+
+
+Self-Stake
+ Vote Pubkey has a single node_pubkey (1:1) 
+  If node_pubkey is an authorized staker or withdrawer for a stake_pubkey that matches the vote_pubkey 
+ 2Y2 Vote has self staked via stake pubkey 5nZZN
 
 
 
