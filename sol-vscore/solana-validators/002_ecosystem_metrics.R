@@ -5,26 +5,26 @@ ecoappdata <- readRDS("001_latest_save.rds")
 
 num_sol_staked_current <- function(ecoappdata){
   data.frame(
-    total = sum(ecoappdata$SOL_STAKE),
-    total_count = length(unique(ecoappdata$VOTER_PUBKEY)),
-    current = sum(ecoappdata[ecoappdata$DELINQUENT == FALSE, "SOL_STAKE"]),
-    current_count = length(unique(ecoappdata$VOTER_PUBKEY[ecoappdata$DELINQUENT == FALSE])),
-    delinquent = sum(ecoappdata[ecoappdata$DELINQUENT == TRUE, "SOL_STAKE"]),
-    delinquent_count = length(unique(ecoappdata$VOTER_PUBKEY[ecoappdata$DELINQUENT == TRUE])),
-    deliquent_stake_percent = sum(ecoappdata[ecoappdata$DELINQUENT == TRUE, "SOL_STAKE"])/sum(ecoappdata$SOL_STAKE) * 100
+    total = sum(ecoappdata$sol_stake),
+    total_count = length(unique(ecoappdata$voter_pubkey)),
+    current = sum(ecoappdata[ecoappdata$delinquent == FALSE, "sol_stake"]),
+    current_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$delinquent == FALSE])),
+    delinquent = sum(ecoappdata[ecoappdata$delinquent == TRUE, "sol_stake"]),
+    delinquent_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$delinquent == TRUE])),
+    deliquent_stake_percent = sum(ecoappdata[ecoappdata$delinquent == TRUE, "sol_stake"])/sum(ecoappdata$sol_stake) * 100
   )
 }
 
 # If you loosen current to active at least 1 epoch in last 10 epochs counts as current.
 num_sol_staked_last10 <- function(ecoappdata){
   data.frame(
-    total = sum(ecoappdata$SOL_STAKE),
-    total_count = length(unique(ecoappdata$VOTER_PUBKEY)),
-    stake_among_active_last10 = sum(ecoappdata[ecoappdata$COUNT_ACTIVE_LAST10 > 0, "SOL_STAKE"]),
-    active_last10_count = length(unique(ecoappdata$VOTER_PUBKEY[ecoappdata$COUNT_ACTIVE_LAST10 > 0])),
-    stake_delinquent_last10 = sum(ecoappdata[ecoappdata$COUNT_ACTIVE_LAST10 == 0, "SOL_STAKE"]),
-    delinquent_last10_count = length(unique(ecoappdata$VOTER_PUBKEY[ecoappdata$COUNT_ACTIVE_LAST10 == 0])),
-    deliquent_stake_percent = sum(ecoappdata[ecoappdata$COUNT_ACTIVE_LAST10 == 0, "SOL_STAKE"])/sum(ecoappdata$SOL_STAKE) * 100
+    total = sum(ecoappdata$sol_stake),
+    total_count = length(unique(ecoappdata$voter_pubkey)),
+    stake_among_active_last10 = sum(ecoappdata[ecoappdata$count_active_last10 > 0, "sol_stake"]),
+    active_last10_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$count_active_last10 > 0])),
+    stake_delinquent_last10 = sum(ecoappdata[ecoappdata$count_active_last10 == 0, "sol_stake"]),
+    delinquent_last10_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$count_active_last10 == 0])),
+    deliquent_stake_percent = sum(ecoappdata[ecoappdata$count_active_last10 == 0, "sol_stake"])/sum(ecoappdata$sol_stake) * 100
   )
   
 }
@@ -37,24 +37,24 @@ get_gini <- function(values){
 }
 
 get_gini_currents <- function(ecoappdata){
-  current <- ecoappdata %>% dplyr::filter(DELINQUENT == FALSE)
-  get_gini(current$SOL_STAKE)
+  current <- ecoappdata %>% dplyr::filter(delinquent == FALSE)
+  get_gini(current$sol_stake)
 }
 
 get_current_gini_countries <- function(ecoappdata){
   current <- ecoappdata %>% 
-    dplyr::filter(DELINQUENT == FALSE) 
+    dplyr::filter(delinquent == FALSE) 
   
   country_lvl <- current %>% 
-    group_by(Country) %>% 
-    summarise(stake = sum(SOL_STAKE))
+    group_by(country) %>% 
+    summarise(stake = sum(sol_stake))
   
   get_gini(country_lvl$stake)
  
 }
 
 get_current_cdf_stats <- function(ecoappdata){
-  current <- ecoappdata %>% dplyr::filter(DELINQUENT == FALSE)
+  current <- ecoappdata %>% dplyr::filter(delinquent == FALSE)
   
   # Gini defined as 1/2 the relative mean absolute difference 
   # this is better for discrete values; slightly different than integral approach
@@ -65,7 +65,7 @@ get_current_cdf_stats <- function(ecoappdata){
   
   data.frame(
     reference_sol_stake = cdf_intervals, 
-    cdf_value = ecdf(current$SOL_STAKE)(cdf_intervals)
+    cdf_value = ecdf(current$sol_stake)(cdf_intervals)
   )
 }
 
@@ -87,10 +87,9 @@ plot_current_cdf <- function(ecoappdata, title = "~65% of Validators have betwee
 }
 
 get_current_software_stats <- function(ecoappdata){
-  current <- ecoappdata %>% dplyr::filter(DELINQUENT == FALSE)
+  current <- ecoappdata %>% dplyr::filter(delinquent == FALSE)
   current %>% 
     group_by(MODIFIED_SOFTWARE_VERSION) %>% 
     summarise(n = n())
 }
-
 

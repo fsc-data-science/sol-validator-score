@@ -31,22 +31,23 @@ function(target_epoch, api_key = api_key, data_source = "data-science", overwrit
   
   # see 001_ecosystem_appdata.R
  ecoappdata <- get_ecosystem_appdata(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
+ colnames(ecoappdata) <- tolower(colnames(ecoappdata))
  
  # use Latitude/Longitude for Country Labeling
- longlats <- ecoappdata[ , c("LONGITUDE", "LATITUDE")]
+ longlats <- ecoappdata[ , c("longitude", "latitude")]
  longlats <- unique(longlats[complete.cases(longlats), ])
- longlats_shape <- st_as_sf(longlats, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+ longlats_shape <- st_as_sf(longlats, coords = c("longitude","latitude"), crs = 4326)
  longlats <- cbind(longlats, longlats_shape)
  longlats_country <- st_intersection(x = longlats_shape, y = world_map)
  longlats$geo <- as.character((longlats$geometry))
  longlats_country$geo <- as.character((longlats_country$geometry))
  
  longlats <- merge(longlats, longlats_country, by = "geo", all.x = TRUE)
- longlats <- longlats[ , c("LONGITUDE", "LATITUDE", "name")]
- colnames(longlats) <- c("LONGITUDE", "LATITUDE", "Country")
+ longlats <- longlats[ , c("longitude", "latitude", "name")]
+ colnames(longlats) <- c("longitude", "latitude", "country")
  
- ecoappdata <- merge(ecoappdata, longlats, by = c("LONGITUDE","LATITUDE"), all.x = TRUE, sort = FALSE)
- ecoappdata[is.na(ecoappdata$Country), "Country"] <- "Unknown"
+ ecoappdata <- merge(ecoappdata, longlats, by = c("longitude","latitude"), all.x = TRUE, sort = FALSE)
+ ecoappdata[is.na(ecoappdata$country), "country"] <- "Unknown"
  
  # consider overwrite 
  if(overwrite_save){
