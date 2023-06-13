@@ -81,7 +81,7 @@ data_center_key, delinquent,
   ) AS count_active_last10
  FROM combined_appdata
  where voter_pubkey IS NOT NULL
-QUALIFY epoch_active = (SELECT epoch from target_epoch)
+QUALIFY epoch_active <= (SELECT epoch from target_epoch)
 ;
   "
   }

@@ -3,30 +3,48 @@ library(dplyr)
 # for testing pass to metric functions 
 ecoappdata <- readRDS("001_latest_save.rds")
 
-num_sol_staked_current <- function(ecoappdata){
-  data.frame(
-    total = sum(ecoappdata$sol_stake),
-    total_count = length(unique(ecoappdata$voter_pubkey)),
-    current = sum(ecoappdata[ecoappdata$delinquent == FALSE, "sol_stake"]),
-    current_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$delinquent == FALSE])),
-    delinquent = sum(ecoappdata[ecoappdata$delinquent == TRUE, "sol_stake"]),
-    delinquent_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$delinquent == TRUE])),
-    deliquent_stake_percent = sum(ecoappdata[ecoappdata$delinquent == TRUE, "sol_stake"])/sum(ecoappdata$sol_stake) * 100
-  )
+# Functions ---- 
+
+num_sol_staked <- function(ecoappdata){
+   ecoappdata %>% 
+    group_by(epoch) %>% 
+    summarise(
+    total_stake = sum(sol_stake), 
+    n_validators = length(unique(voter_pubkey)),
+    current_stake = sum( sol_stake * (delinquent == FALSE) ),
+    n_current_validators = sum(delinquent == FALSE),
+    delinquent_stake = sum( sol_stake * (delinquent == TRUE) ),
+    n_delinquent_validators = sum(delinquent == TRUE)
+    )
 }
 
 # If you loosen current to active at least 1 epoch in last 10 epochs counts as current.
 num_sol_staked_last10 <- function(ecoappdata){
-  data.frame(
-    total = sum(ecoappdata$sol_stake),
-    total_count = length(unique(ecoappdata$voter_pubkey)),
-    stake_among_active_last10 = sum(ecoappdata[ecoappdata$count_active_last10 > 0, "sol_stake"]),
-    active_last10_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$count_active_last10 > 0])),
-    stake_delinquent_last10 = sum(ecoappdata[ecoappdata$count_active_last10 == 0, "sol_stake"]),
-    delinquent_last10_count = length(unique(ecoappdata$voter_pubkey[ecoappdata$count_active_last10 == 0])),
-    deliquent_stake_percent = sum(ecoappdata[ecoappdata$count_active_last10 == 0, "sol_stake"])/sum(ecoappdata$sol_stake) * 100
-  )
+ 
+  ecoappdata %>% 
+    group_by(epoch) %>% 
+    summarise(
+      total_stake = sum(sol_stake), 
+      n_validators = length(unique(voter_pubkey)),
+      recently_active_stake = sum( sol_stake * (count_active_last10 > 0) ),
+      n_recent_active_validators = sum(count_active_last10 > 0),
+      delinquent10_stake = sum( sol_stake * (count_active_last10 == 0) ),
+      n_delinquent10_validators = sum(count_active_last10 == 0)
+    )
   
+}
+
+num_sol_staked_by_country <- function(ecoappdata){
+  ecoappdata %>% 
+    group_by(epoch, country) %>% 
+    summarise(
+      total_stake = sum(sol_stake), 
+      n_validators = length(unique(voter_pubkey)),
+      current_stake = sum( sol_stake * (delinquent == FALSE) ),
+      n_current_validators = sum(delinquent == FALSE),
+      delinquent_stake = sum( sol_stake * (delinquent == TRUE) ),
+      n_delinquent_validators = sum(delinquent == TRUE)
+    )
 }
 
 get_gini <- function(values){
@@ -37,19 +55,34 @@ get_gini <- function(values){
 }
 
 get_gini_currents <- function(ecoappdata){
-  current <- ecoappdata %>% dplyr::filter(delinquent == FALSE)
-  get_gini(current$sol_stake)
+ 
+  ecoappdata %>% 
+    group_by(epoch) %>% 
+    filter(delinquent == FALSE) %>% 
+    summarise(
+      gini = get_gini(sol_stake)
+    )
 }
 
-get_current_gini_countries <- function(ecoappdata){
-  current <- ecoappdata %>% 
-    dplyr::filter(delinquent == FALSE) 
+get_gini_recent <- function(ecoappdata){
+    ecoappdata %>% 
+    group_by(epoch) %>% 
+    filter(count_active_last10 > 0) %>% 
+    summarise(
+      gini = get_gini(sol_stake)
+    )
+}
+
+get_current_gini_by_country <- function(ecoappdata){
+  ecoappdata %>% 
+    dplyr::filter(delinquent == FALSE) %>% 
+    group_by(epoch, country) %>% 
+    summarise(stake = sum(sol_stake)) %>% 
+    group_by(epoch) %>% 
+    summarise(
+      country_gini = get_gini(stake)
+    )
   
-  country_lvl <- current %>% 
-    group_by(country) %>% 
-    summarise(stake = sum(sol_stake))
-  
-  get_gini(country_lvl$stake)
  
 }
 
@@ -87,9 +120,24 @@ plot_current_cdf <- function(ecoappdata, title = "~65% of Validators have betwee
 }
 
 get_current_software_stats <- function(ecoappdata){
-  current <- ecoappdata %>% dplyr::filter(delinquent == FALSE)
-  current %>% 
-    group_by(MODIFIED_SOFTWARE_VERSION) %>% 
-    summarise(n = n())
+  ecoappdata %>% filter(delinquent == FALSE) %>%  
+    group_by(epoch) %>% 
+    mutate(
+      maxsoftware = max(modified_software_version)) %>% 
+    group_by(epoch, modified_software_version) %>% 
+    summarise(n = n(), 
+              ismax = (modified_software_version == maxsoftware))
+  
 }
 
+# Reference Objects ----
+
+ecosystem_sol_stake_stats_by_epoch <- num_sol_staked(ecoappdata)
+ecosystem_sol_stake_stats_by_epoch_recently_active <- num_sol_staked_last10(ecoappdata)
+ecosystem_sol_stake_stats_by_epoch_country <- num_sol_staked_by_country(ecoappdata)
+
+ecosystem_gini_by_epoch <- get_gini_currents(ecoappdata)
+ecosystem_gini_by_epoch_recently_active <- get_gini_recent(ecoappdata)
+ecosystem_gini_by_epoch_country <- get_current_gini_by_country(ecoappdata)
+
+ecosystem_software_stats_by_epoch <- get_current_software_stats(ecoappdata)

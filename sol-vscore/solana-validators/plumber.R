@@ -8,7 +8,6 @@ api_key <- readLines("api_key.txt")
 world <- read_sf("world-shapefile/")
 world_map = (world[ ,"name"])
 
-
 source("001_ecosystem_appdata.R")
 
 #* @apiTitle Solana Validator Score
@@ -22,7 +21,7 @@ function(msg = "") {
 }
 
 #* Return 
-#' @param target_epoch Solana Epoch. 
+#' @param target_epoch Solana Epoch to get histories up to specified epoch.
 #' @param api_key Flipside API Key.
 #' @param data_source Default snowflake, for specific API keys, "data-science" is a valid segmented warehouse.
 #' @param overwrite_save Default TRUE, enables plots to asynchronously use a save for speed.
