@@ -47,6 +47,25 @@ num_sol_staked_by_country <- function(ecoappdata){
     )
 }
 
+ecosystem_10epoch_churn <- function(ecoappdata){
+  eco_stats <- num_sol_staked(ecoappdata)
+  
+  churn_rate <- rep(0, length(eco_stats$current_stake))
+  
+  for(i in 10:length(eco_stats$current_stake)){
+  temp <- sum(abs(diff(eco_stats$current_stake[(i-9):i])))/
+            (eco_stats$current_stake[i])
+  
+  if(!is.na(temp) & !is.infinite(temp) & !is.nan(temp)){
+    churn_rate[i] <- temp
+  }
+  }
+  
+  eco_stats$churn_rate <- churn_rate*100
+  return(eco_stats)
+  
+  }
+
 get_gini <- function(values){
   mv <- mean(values)
   abs_diff <- abs(values-mv)
@@ -126,13 +145,16 @@ get_current_software_stats <- function(ecoappdata){
       maxsoftware = max(modified_software_version)) %>% 
     group_by(epoch, modified_software_version) %>% 
     summarise(n = n(), 
-              ismax = (modified_software_version == maxsoftware))
+              ismax = (modified_software_version == maxsoftware)) %>% 
+    unique()
   
 }
 
 # Reference Objects ----
 
 ecosystem_sol_stake_stats_by_epoch <- num_sol_staked(ecoappdata)
+ecosystem_sol_stake_stats_by_epoch_with_churn <- ecosystem_10epoch_churn(ecoappdata)
+
 ecosystem_sol_stake_stats_by_epoch_recently_active <- num_sol_staked_last10(ecoappdata)
 ecosystem_sol_stake_stats_by_epoch_country <- num_sol_staked_by_country(ecoappdata)
 
