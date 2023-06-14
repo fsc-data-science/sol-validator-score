@@ -1,4 +1,5 @@
 library(dplyr)
+library(plotly)
 
 # for testing pass to metric functions 
 ecoappdata <- readRDS("001_latest_save.rds")
