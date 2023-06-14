@@ -9,6 +9,7 @@ world <- read_sf("world-shapefile/")
 world_map = (world[ ,"name"])
 
 source("001_ecosystem_appdata.R")
+source("003_validator_staker_stats.R")
 
 #* @apiTitle Solana Validator Score
 #* @apiDescription API for updating local data, pulling images, and 
@@ -68,8 +69,35 @@ function(){
   return(ecoappdata)
 }
 
-#* Return
-#' @param name description
+#* Return 
+#' @param target_epoch Solana Epoch to get validator staker stats up to that epoch.
+#' @param api_key Flipside API Key.
+#' @param data_source Default snowflake, for specific API keys, "data-science" is a valid segmented warehouse.
+#' @param overwrite_save Default TRUE, enables plots to asynchronously use a save for speed.
+#* @post /validator_staker_stats
+function(target_epoch, api_key = api_key, data_source = "data-science", overwrite_save = FALSE) {
+  
+  # see 003_validator_staker_stats.R
+  validator_stake <- get_validator_stake(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
+  
+  # consider overwrite 
+  if(overwrite_save){
+    saveRDS(validator_stake, "003_latest_save.rds")
+  }
+  return(validator_stake)
+}
+
+#* Return 
+#* @get /saved_validator_staker_stats
+function(){
+  tryCatch({
+    validator_stake <- readRDS("003_latest_save.rds")
+  }, error = function(e){
+    stop("No 003_latest_save.rds found in server, Post validator_staker_stats with overwrite_save = TRUE")
+  })
+  
+  return(validator_stake)
+}
 
 
 #* Plot a Plotly of Ecosystem Software Version
@@ -80,16 +108,6 @@ function(try_latest = TRUE) {
     rand <- rnorm(100)
     hist(rand)
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

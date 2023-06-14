@@ -1,6 +1,6 @@
 #' Ecosystem App Data 
 #'
-#' @description For a given `target_epoch` return the available app data as of that epoch. 
+#' @description For a given `target_epoch` return the available app data up to that epoch. 
 #' Epoch | Voter_Pubkey (NULL removed) | Validator Name (if available) | Validator Details (if available) | Software Version |
 #' Latitude | Longitude | Commission | SOL_Stake | Data Center Key | 
 #' Delinquent | # Epochs active in previous 10 epochs.
