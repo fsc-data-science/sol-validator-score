@@ -29,7 +29,7 @@ function(msg = "") {
 #' @param data_source Default snowflake, for specific API keys, "data-science" is a valid segmented warehouse.
 #' @param overwrite_save Default TRUE, enables plots to asynchronously use a save for speed.
 #* @post /ecosystem_appdata
-function(target_epoch, api_key = api_key, data_source = "data-science", overwrite_save = FALSE) {
+function(target_epoch, api_key, data_source = "data-science", overwrite_save = FALSE) {
   
   # see 001_ecosystem_appdata.R
  ecoappdata <- get_ecosystem_appdata(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
