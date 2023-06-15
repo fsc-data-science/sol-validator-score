@@ -164,3 +164,22 @@ ecosystem_gini_by_epoch_recently_active <- get_gini_recent(ecoappdata)
 ecosystem_gini_by_epoch_country <- get_current_gini_by_country(ecoappdata)
 
 ecosystem_software_stats_by_epoch <- get_current_software_stats(ecoappdata)
+
+# Plots ----
+
+plot_epoch_solstake <- function(ecosystem_sol_stake_stats_by_epoch, title = ""){
+  plotly::plot_ly(data = ecosystem_sol_stake_stats_by_epoch,
+                  x = ~epoch, 
+                  y = ~total_stake, 
+                  type = 'scatter', mode = 'lines+markers') %>% 
+    layout(xaxis = list(title = "EPOCH", 
+                        titlefont = list(size = 18)),
+           yaxis = list(title = "# SOL Stake",
+                        titlefont = list(size = 18)),
+           title = list(
+             text = title, 
+             font = list(size = 18),
+             y = 0.95)
+    )
+}
+
