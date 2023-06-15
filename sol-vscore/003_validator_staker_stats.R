@@ -23,20 +23,20 @@ SELECT '__TARGET_EPOCH__' AS epoch FROM dual
 staker_history AS (
 select epoch_ingested_at as epoch,
  activation_epoch, deactivation_epoch, 
-active_stake, account_sol,
- vote_pubkey as voter_pubkey, 
- stake_pubkey
-from solana_dev.silver.historical_stake_account 
+ account_sol as active_stake,
+ voter as voter_pubkey, 
+ pubkey as stake_pubkey
+from solana.silver.historical_stake_account 
 WHERE epoch <= (select epoch from target_epoch)
 ORDER BY epoch_ingested_at ASC, voter_pubkey
 ),
 staker_snapshot AS (
 select epoch_recorded as epoch,
  activation_epoch, deactivation_epoch, 
-active_stake, account_sol,
+ account_sol as active_stake,
  vote_pubkey as voter_pubkey, 
  stake_pubkey
-from solana_dev.silver.snapshot_stake_account
+from solana.silver.snapshot_stake_accounts
 WHERE epoch <= (select epoch from target_epoch)
 ORDER BY epoch ASC, voter_pubkey
 ), 
@@ -89,6 +89,7 @@ from staker_sol_history
 
 SELECT *
   FROM staker_stats 
+;
 ;
 
   "

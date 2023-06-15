@@ -20,10 +20,11 @@ with target_epoch AS (
 SELECT '__TARGET_EPOCH__' AS epoch FROM dual
 ),
 
+
 vote_history AS (
 select epoch_ingested_at as epoch, 
 epoch as last_active_epoch,
-pubkey as voter_pubkey,
+vote_pubkey as voter_pubkey,
 votes,
 case when epoch_ingested_at = epoch then 'active'
 when (epoch_ingested_at - epoch) = 1 then 'deactivated'
@@ -31,7 +32,7 @@ when (epoch_ingested_at - epoch) > 1 then 'currently_deactivated'
 else 'weird'
 end as active_category
 from 
-solana_dev.silver.historical_vote_account
+solana.silver.historical_vote_account
 WHERE epoch_ingested_at <= (SELECT epoch from target_epoch) 
 ORDER BY epoch_ingested_at ASC, voter_pubkey
 ),
@@ -46,7 +47,7 @@ when (epoch_recorded - epoch) > 1 then 'currently_deactivated'
 else 'weird'
 end as active_category
 from 
-solana_dev.silver.snapshot_vote_accounts
+solana.silver.snapshot_vote_accounts
 WHERE epoch_recorded <= (SELECT epoch from target_epoch) 
 ORDER BY epoch_recorded ASC, voter_pubkey
 ), 
@@ -63,8 +64,8 @@ last_active_epoch, active_category,
  (diffslot - 30) as num_slots_skipped, 
  -- some old votes get kept in deactivated voters causing excessive skips, cap percent at 100%. 
  round(coalesce(least(num_slots_skipped,31), 31) / 31 * 100,2) as percent_slots_skipped_in_epoch
-from combined_vote;
-
+from combined_vote
+HAVING voter_pubkey IS NOT NULL;
   "
   }
   
