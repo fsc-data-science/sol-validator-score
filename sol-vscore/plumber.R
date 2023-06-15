@@ -35,6 +35,18 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
  ecoappdata <- get_ecosystem_appdata(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
  colnames(ecoappdata) <- tolower(colnames(ecoappdata))
  
+ # software version upgrades occasionally cause duplicate voter_pubkey at lower software versions 
+ 
+ # drop unique identifier
+ ecoappdata$x__row_index <- NULL 
+ # remove obvious duplicates
+ ecoappdata <- unique(ecoappdata) 
+ 
+ # some validators duplicated with slightly differing sol-stake within same epoch
+ # pick MIN of sol_stake within epoch in this case
+ ecoappdata <- ecoappdata %>% group_by(epoch, voter_pubkey) %>% 
+   filter(sol_stake == min(sol_stake)) %>% as.data.frame()
+ 
  # use Latitude/Longitude for Country Labeling
  longlats <- ecoappdata[ , c("longitude", "latitude")]
  longlats <- unique(longlats[complete.cases(longlats), ])
@@ -79,7 +91,7 @@ function(){
 #' @param data_source Default snowflake, for specific API keys, "data-science" is a valid segmented warehouse.
 #' @param overwrite_save Default TRUE, enables plots to asynchronously use a save for speed.
 #* @post /validator_staker_stats
-function(target_epoch, api_key = api_key, data_source = "data-science", overwrite_save = FALSE) {
+function(target_epoch, api_key, data_source = "data-science", overwrite_save = FALSE) {
   
   # see 003_validator_staker_stats.R
   validator_stake <- get_validator_stake(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
@@ -111,7 +123,7 @@ function(){
 #' @param data_source Default snowflake, for specific API keys, "data-science" is a valid segmented warehouse.
 #' @param overwrite_save Default TRUE, enables plots to asynchronously use a save for speed.
 #* @post /validator_vote_stats
-function(target_epoch, api_key = api_key, data_source = "data-science", overwrite_save = FALSE) {
+function(target_epoch, api_key, data_source = "data-science", overwrite_save = FALSE) {
   
   # see 005_validator_vote_stats.R
   validator_vote <- get_validator_vote(target_epoch = target_epoch, api_key = api_key, data_source = data_source)
@@ -145,7 +157,6 @@ function(try_latest = TRUE) {
     rand <- rnorm(100)
     hist(rand)
 }
-
 
 
 # Programmatically alter your API
