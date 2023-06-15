@@ -44,8 +44,11 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
  
  # some validators duplicated with slightly differing sol-stake within same epoch
  # pick MIN of sol_stake within epoch in this case
+ # if somehow still duplicate pick the FIRST value (after min)
  ecoappdata <- ecoappdata %>% group_by(epoch, voter_pubkey) %>% 
-   filter(sol_stake == min(sol_stake)) %>% as.data.frame()
+   filter(sol_stake == min(sol_stake)) %>% 
+   slice(1) %>% 
+   as.data.frame()
  
  # use Latitude/Longitude for Country Labeling
  longlats <- ecoappdata[ , c("longitude", "latitude")]
