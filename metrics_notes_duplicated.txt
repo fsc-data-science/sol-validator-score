@@ -1,0 +1,50 @@
+Ecosystem
+ Current Epoch
+ 	Sol Staked in current epoch 
+        # Current validators 
+        # Recent validators (active at least once in last 10 epochs)
+	Gini Coefficient
+	Software Version Distribution
+	Country Spread of Validators (active at least once in last 10?)
+	Country Spread of Current Stake
+ Historical 
+ 	- Sol Staked over all past epochs
+ 	- Sol Staked in current validators over all past epochs (define current at epoch level)
+ 	- Delinquent Sol Stake over all past epochs 
+ 	# Validators in current epoch 
+ 	- # Current over all past epochs 
+ 	- # Delinquent over all past epochs
+ 	- Gini Coefficient over time 
+	- % of Validators using Max Software available over time 
+
+
+Available in app-data
+Validator
+Name (if available)
+Detail
+Commission Rate  
+Software Version 
+ - Relative to max(software_version)
+Country Location
+ - Latitude/Longitude country check
+Sol Staked
+
+
+Active Stakers 
+Avg Sol Staked
+ - Cumlative Distribution Chart or Histogram
+
+10-epoch rolling weighted attendance rate (WAR)
+10-Epoch Churn Rate
+ - (new active + deactivated)/current
+10-Epoch Attendance 
+ - 1 - (# num_slots_skipped/num_slots in last 10 epochs)
+Age
+ - # epochs since activated
+Lifetime Active %
+ - # epochs active since activated
+Status
+ - Current or Delinquent (call via ++++epoch_credits in vote account)
+
+
+
