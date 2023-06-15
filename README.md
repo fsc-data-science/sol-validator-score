@@ -11,19 +11,25 @@ A world map CRS 4326 WGS 84 shapefile is included for mapmaking & identification
 This API identified Solana Validators at the Voter Public Key `voter_pubkey` level 
 across 3 categories of data.
 
-- Application Data: Contains location (coordinates, country), validator name/details, software version, etc. over time measured as Solana epochs (~ 2 days).
+## Application Data
+
+Contains location (coordinates, country), validator name/details, software version, etc. over time measured as Solana epochs (~ 2 days).
 
 - 001_ecosystem_appdata.R
 - 001_latest_save.rds
 - 002_ecosystem_metrics.R
 
-- Staker Data: Contains aggregate information on each validator's SOL Staked & number of stakers (`stake_pubkey`) over time including churn statistics. 
+## Staker Data 
+
+Contains aggregate information on each validator's SOL Staked & number of stakers (`stake_pubkey`) over time including churn statistics. 
 
 - 003_latest_save.rds
 - 003_validator_staker_stats.R
 - 004_validator_stake_metrics.R
 
-- Vote Data: Aggregation information on each validator's vote behavior including activeness in an epoch and slot confirmation rate (attendance).
+## Vote Data
+
+Aggregation information on each validator's vote behavior including activeness in an epoch and slot confirmation rate (attendance).
 
 - 005_latest_save.rds
 - 005_validator_vote_stats.R
