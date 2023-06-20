@@ -24,7 +24,7 @@ get_vote_avg10_attendance <- function(validator_vote){
     group_by(voter_pubkey) %>%
     arrange(epoch) %>% 
     mutate(
-      avg_10epoch_attendance = 100 - rolling_avg(percent_slots_skipped_in_epoch, k = 10)
+      avg_10epoch_attendance = 100 - rolling_avg(percent_on_chosen_fork, k = 10)
     )
 }
 
