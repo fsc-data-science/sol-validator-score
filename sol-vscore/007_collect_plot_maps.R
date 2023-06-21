@@ -33,8 +33,15 @@ add_coordinate_to_validator <- function(validator_lvl_data, voter_coordinate, se
   return(vcll)
 }
 
+# probably need to aggregate up to unique coordinates to make any useful plot. But available.
+validator_stake_coords <- add_coordinate_to_validator(validator_lvl_data = validator_stake, 
+                                                      voter_coordinate, 
+                                                      select_epoch = 463)
+
 # Add Country Geometry ----
+
 # Filter to Desired Epoch note ecoappdata may have differing max epoch than other data.
+
 add_country_to_validator <- function(validator_lvl_data, voter_country, world_map, select_epoch = NULL){
   
    if(!is.null(select_epoch)){
@@ -67,6 +74,12 @@ add_country_to_validator <- function(validator_lvl_data, voter_country, world_ma
  return(vctry)
 }
 
+# Still needs to be aggregated up to country level to make sense. 
+validator_country <- add_coordinate_to_validator(validator_lvl_data = validator_stake, 
+                                                      voter_country, 
+                                                      select_epoch = 463)
+
+# Probably the function to use, aggregate to Country then add country geometry. 
 add_country_to_countrylvl <- function(country_lvl_data, world_map, select_epoch = NULL){
   
   cl <- merge(country_lvl_data, world_map, all.x = TRUE, by.x = "country", by.y = "name")
