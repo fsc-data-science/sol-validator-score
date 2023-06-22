@@ -139,7 +139,6 @@ country_463$label <- paste0("Country: ",country_463$country,
 
 # Map ---- 
 
-
 plot_country <- function(country_geo_data, color_col, hover_text_col){
   
   colorpal <- colorNumeric(palette = c("#a6d96a", "#66bd63", "#1a9850", "#006837", "#004529"), 
@@ -215,5 +214,3 @@ plot_coords <- function(coords_geo_data, color_col, marker_text){
 }
 
 plot_coords(validator_stake_coords_463, color_col = "sol_staked", marker_text = "label")
-
-
