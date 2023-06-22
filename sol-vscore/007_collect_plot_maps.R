@@ -29,10 +29,9 @@ add_coordinate_to_validator <- function(validator_lvl_data, voter_coordinate, se
   }
   
   # infill missing as 0,0 "unknown"
-  vcll$latitude[is.na(vcll$latitude)] <- -150
-  vcll$longitude[is.na(vcll$longitude)] <- 10
+  vcll$latitude[is.na(vcll$latitude)] <- 10
+  vcll$longitude[is.na(vcll$longitude)] <- -150
   
-  vcll <- st_as_sf(vcll, coords = c("longitude", "latitude"), crs = 4326, agr = "constant")
   return(vcll)
 }
 
@@ -102,7 +101,7 @@ add_country_to_countrylvl <- function(country_lvl_data, world_map, select_epoch 
 
 # Variables ----
 
-# probably need to aggregate up to unique coordinates to make any useful plot. But available.
+# Will jitter coordinates
 validator_stake_coords_463 <- add_coordinate_to_validator(validator_lvl_data = validator_stake, 
                                                           voter_coordinate, 
                                                           select_epoch = 463)
@@ -115,22 +114,36 @@ validator_country_463 <- add_country_to_validator(validator_lvl_data = validator
 
 country_463 <- add_country_to_countrylvl(ecosystem_sol_stake_stats_by_epoch_country, world_map, 463)
 
-# Map ---- 
+# HTML Compliant Labels ----
 
-# HTML Compliant 
+validator_stake_coords_463$label <- paste0("<b>Validator ...", 
+                                           substr(validator_stake_coords_463$voter_pubkey, start = 40, stop = 44), 
+                                           "</b><br># Stakers: ",
+                                           validator_stake_coords_463$nstakers, 
+                                           "<br>Total Stake: ",
+                                           format(floor(validator_stake_coords_463$sol_staked),
+                                                  big.mark = ","),
+                                           
+                                           '<br><a href="',
+                                           'https://solanacompass.com/validators/',
+                                           validator_stake_coords_463$voter_pubkey,
+                                           '">', 
+                                           'Compass Link',
+                                           '</a>'
+                                           )
+
 country_463$label <- paste0("Country: ",country_463$country, 
                             "<br>Total Stake: ",
                             format(floor(country_463$total_stake), big.mark = ",")
-                            )
+)
+
+# Map ---- 
 
 
 plot_country <- function(country_geo_data, color_col, hover_text_col){
   
-  colorpal <- colorNumeric(palette = c("#301855",
-                                       "#a84089",
-                                       "#ab7dbe",
-                                       "#dd6aa8",
-                                       "#ff98fe"), domain = country_geo_data[[color_col]])
+  colorpal <- colorNumeric(palette = c("#a6d96a", "#66bd63", "#1a9850", "#006837", "#004529"), 
+                           domain = country_geo_data[[color_col]])
   
   df <- st_as_sf(country_geo_data)
   df[["clr"]] <- country_geo_data[[color_col]]
@@ -162,76 +175,34 @@ plot_country <- function(country_geo_data, color_col, hover_text_col){
 
 plot_country(country_463, "n_validators", "label")
 
-
-
-# Coordinates ----
-
-
-validator_stake_coords_463$label <- paste0("Country: ",validator_stake_coords_463$country, 
-                            "<br>Total Stake: ",
-                            format(floor(validator_stake_coords_463$total_stake), big.mark = ",")
-)
-
-coords_geo_data <- validator_stake_coords_463 
-
-
-plot_coords <- function(coords_geo_data, color_col, 
-                        size_col, marker_text){
+plot_coords <- function(coords_geo_data, color_col, marker_text){
   
-  colorpal <- colorNumeric(palette = c("#301855",
-                                       "#a84089",
-                                       "#ab7dbe",
-                                       "#dd6aa8",
-                                       "#ff98fe"), domain = country_geo_data[[color_col]])
+  colorpal <- colorNumeric(palette = rev(c("#a6d96a", "#66bd63", "#1a9850", "#006837", "#004529")), 
+                           domain = coords_geo_data[[color_col]])
   
-  df <- st_as_sf(country_geo_data)
-  df[["clr"]] <- country_geo_data[[color_col]]
-  df[["txt"]] <- country_geo_data[[hover_text_col]]
-  
-  library(leaflet)
-  
-  # Create a synthetic data frame
-  df <- data.frame(
-    latitude = c(40.7128, 34.0522, 51.5074, 48.8566, 37.7749, 55.7558),
-    longitude = c(-74.0060, -118.2437, -0.1278, 2.3522, -122.4194, 37.6176),
-    id = c(1, 2, 3, 4, 5, 6),
-    value1 = c(10, 20, 30, 40, 50, 60),
-    value2 = c(100, 200, 300, 400, 500, 600),
-    label = c("Marker 1", "Marker 2", "Marker 3", "Marker 4", "Marker 5", "Marker 6")
-  )
+  df <- coords_geo_data
+  df[["clr"]] <- coords_geo_data[[color_col]]
+  df[["txt"]] <- coords_geo_data[[marker_text]]
+ 
   
   
-  map <- leaflet()
-  
-  map <- map %>% addTiles()
+  set.seed(4)
+  df$latitude <- df$latitude + rnorm(length(df$latitude), mean = 0, sd = 0.1)
+  df$longitude <- df$longitude + rnorm(length(df$longitude), mean = 0, sd = 0.1)
   
   cluster_options <- markerClusterOptions(
-    disableClusteringAtZoom = 8
+    disableClusteringAtZoom = 4
   )
-  
-  map <- map %>%
-    addCircleMarkers(
-      data = df,
-      lat = ~latitude,
-      lng = ~longitude,
-      group = ~id,
-      clusterOptions = cluster_options,
-      popup = ~label
-    )
-  
+ 
   leaflet(df) %>% 
     addTiles() %>% 
-    addPolygons(
-      fillColor = ~colorpal(clr),
-      fillOpacity = 0.8,
-      weight = 1,
-      color = "white",
-      label = lapply(df$txt, HTML),
-      highlightOptions = highlightOptions(
-        color = "black",
-        weight = 2,
-        bringToFront = TRUE
-      )
+    addCircleMarkers(
+      lat = ~latitude,
+      lng = ~longitude,
+      color = ~colorpal(df$clr),
+      group = ~voter_pubkey,
+      clusterOptions = cluster_options,
+      popup = ~lapply(df$txt, HTML)
     )  %>%
     addLegend(
       "bottomright", 
@@ -242,5 +213,7 @@ plot_coords <- function(coords_geo_data, color_col,
     )
   
 }
+
+plot_coords(validator_stake_coords_463, color_col = "sol_staked", marker_text = "label")
 
 
