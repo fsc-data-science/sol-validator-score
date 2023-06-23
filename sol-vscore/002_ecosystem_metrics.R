@@ -67,11 +67,38 @@ ecosystem_10epoch_churn <- function(ecoappdata){
   
   }
 
+get_nakamoto <- function(values){
+    vec <- sort(values,decreasing = TRUE)
+  cumv <- cumsum(vec)
+  return(
+    which(cumv > (sum(vec) * 0.5))[1]
+  )
+}
+
+get_nakamoto_currents <- function(ecoappdata){
+  ecoappdata %>% 
+    group_by(epoch) %>% 
+    filter(delinquent == FALSE) %>% 
+    summarise(
+      nakamoto = get_nakamoto(sol_stake)
+    )
+}
+
 get_gini <- function(values){
   mv <- mean(values)
   abs_diff <- abs(values-mv)
   mad <- mean(abs_diff)
   return(mad/mv/2)
+}
+
+get_gini_currents <- function(ecoappdata){
+  
+  ecoappdata %>% 
+    group_by(epoch) %>% 
+    filter(delinquent == FALSE) %>% 
+    summarise(
+      gini = get_gini(sol_stake)
+    )
 }
 
 get_gini_currents <- function(ecoappdata){
@@ -160,6 +187,7 @@ ecosystem_sol_stake_stats_by_epoch_recently_active <- num_sol_staked_last10(ecoa
 ecosystem_sol_stake_stats_by_epoch_country <- num_sol_staked_by_country(ecoappdata)
 
 ecosystem_gini_by_epoch <- get_gini_currents(ecoappdata)
+ecosystem_nakamoto_by_epoch <- get_nakamoto_currents(ecoappdata)
 ecosystem_gini_by_epoch_recently_active <- get_gini_recent(ecoappdata)
 ecosystem_gini_by_epoch_country <- get_current_gini_by_country(ecoappdata)
 
