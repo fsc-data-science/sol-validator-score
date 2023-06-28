@@ -84,6 +84,18 @@ get_nakamoto_currents <- function(ecoappdata){
     )
 }
 
+get_current_nakamoto_by_country <- function(ecoappdata){
+  ecoappdata %>% 
+    dplyr::filter(delinquent == FALSE) %>% 
+    group_by(epoch, country) %>% 
+    summarise(stake = sum(sol_stake)) %>% 
+    group_by(epoch) %>% 
+    summarise(
+      country_nakamoto = get_nakamoto(stake)
+    )
+}
+
+
 get_gini <- function(values){
   mv <- mean(values)
   abs_diff <- abs(values-mv)
@@ -101,15 +113,6 @@ get_gini_currents <- function(ecoappdata){
     )
 }
 
-get_gini_currents <- function(ecoappdata){
- 
-  ecoappdata %>% 
-    group_by(epoch) %>% 
-    filter(delinquent == FALSE) %>% 
-    summarise(
-      gini = get_gini(sol_stake)
-    )
-}
 
 get_gini_recent <- function(ecoappdata){
     ecoappdata %>% 
@@ -129,8 +132,6 @@ get_current_gini_by_country <- function(ecoappdata){
     summarise(
       country_gini = get_gini(stake)
     )
-  
- 
 }
 
 get_current_cdf_stats <- function(ecoappdata){
@@ -186,10 +187,13 @@ ecosystem_sol_stake_stats_by_epoch_with_churn <- ecosystem_10epoch_churn(ecoappd
 ecosystem_sol_stake_stats_by_epoch_recently_active <- num_sol_staked_last10(ecoappdata)
 ecosystem_sol_stake_stats_by_epoch_country <- num_sol_staked_by_country(ecoappdata)
 
-ecosystem_gini_by_epoch <- get_gini_currents(ecoappdata)
 ecosystem_nakamoto_by_epoch <- get_nakamoto_currents(ecoappdata)
+ecosystem_nakamoto_by_epoch_country <- get_current_nakamoto_by_country(ecoappdata)
+
+ecosystem_gini_by_epoch <- get_gini_currents(ecoappdata)
 ecosystem_gini_by_epoch_recently_active <- get_gini_recent(ecoappdata)
 ecosystem_gini_by_epoch_country <- get_current_gini_by_country(ecoappdata)
+
 
 ecosystem_software_stats_by_epoch <- get_current_software_stats(ecoappdata)
 
