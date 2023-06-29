@@ -1,0 +1,239 @@
+/* Example custom-style.css */
+@import url('https://fonts.googleapis.com/css?family=Orbitron:900&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto&Mono:display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto:display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  background-color: #F9F9FD;
+  height: 100%;
+  font-family: Roboto;
+}
+
+.container-fluid {
+  background-color: #F9F9FD;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 98vh;
+}
+
+.content {
+  flex: 1;
+}
+.flex-row {
+  display: flex;
+  align-items: center;
+  font-family: Orbitron;
+  font-size: 2em;
+  margin-bottom: -42px;
+}
+
+.left-section {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+.left-section img {
+  height: 35px;
+  margin-right: 10px;
+  margin-left: 50px;
+}
+
+.right-section {
+  flex-grow: 1;
+  text-align: right;
+  margin-right: 50px;
+}
+      
+#beta {
+  color: red;
+  padding-right: 10px;
+}  
+
+#maintabs-row {
+  border: 2px #E2E1E4 solid;
+  border-radius: 12px;
+  margin: 1%;
+  padding: 1%;
+  height: 100%;
+  background-color: white;
+  min-height: 94vh;
+}
+
+/* bunch of tab styling */
+.nav {
+  margin: 0 auto; /* Set left and right margins to 'auto' */
+  display: table; /* Add 'display: table' to center the tabs horizontally */
+  margin-bottom: 20px;
+}
+      
+.nav > li {
+  margin-right: 10px;
+}
+
+#maintabs.nav-pills>li>a {
+  border-radius: 5px;
+  background-color: white;
+  color: black;
+}
+
+/* Light grey gradient shadow */
+#maintabs.nav-pills>li>a {
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Heavier shadow on the bottom */
+#maintabs.nav-pills>li>a {
+  box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.4);
+}
+
+
+#maintabs.nav-pills>li>a {
+  font-family: Orbitron;
+}
+
+/* Purple background for the selected tab */
+#maintabs.nav-pills>li.active>a {
+  background-color: #9945FF;
+  color: white;
+}
+
+
+/* Styling for reusable box component */
+.box-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.box {
+  flex-grow: 1; /* Fill horizontal space */
+  padding: 10px;
+  border: 1px rgba(224, 224, 245, 0.5) solid;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background-color: #F9F9FD;
+}
+
+.box .box-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  margin-bottom: 10px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px;
+  margin-left: 10px;
+  margin-right: 10px;
+  
+}
+
+.box-text {
+  font-family: Roboto Mono;
+  padding-left: 10px;
+}
+
+.box .box-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.box .box-group-item {
+  width: calc(33.33% - 10px);
+  padding: 10px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.box .box-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #14F195;
+  text-align: center;
+}
+
+.box .box-description {
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+.box .box-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #9945FF;
+}
+
+
+#corr_x, #corr_y, #corr_size {
+  font-family: Roboto Mono;
+}
+
+#themap {
+  border-radius: 10px;
+}
+
+.sidemetric {
+  margin-bottom: 50px;
+}
+.largemetric {
+  font-family: Orbitron;
+  font-size: 1.6em;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.metricdesc {
+  font-size: 1.4em;
+  text-align: center;
+  color: #999999;
+}
+
+
+/* Common button styling */
+.radio-group-buttons .btn.radiobtn {
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Light shadow */
+    color: black; /* Black text */
+    font-family: 'Orbitron', sans-serif; /* Orbitron font */
+    margin: 5px; /* Space between buttons */
+}
+
+/* Adjusted border radius for first and last buttons */
+.btn {
+    border-radius: 5px !important;
+}
+
+/* Background and text color for unselected buttons */
+.radio-group-buttons .btn-default {
+    background: white; /* White background when not selected */
+}
+
+.btn.active, .btn {
+  border: none;
+}
+
+/* Background and text color for selected buttons */
+.radio-group-buttons .btn-default.active {
+    background: linear-gradient(45deg, #E9DBFA, #CBF6E5); /* Light gradient background when selected */
+    color: black; /* Black text when selected */
+}
+
+
+.tbd {
+  font-size: 1.6em;
+  font-family: Roboto Mono;
+  color: #9945FF;
+}
+
+
+
+

@@ -1,0 +1,73 @@
+/* Default styling for vertical tabs */
+  .vertical-tabs {
+    display: flex;
+    align-items: flex-start;
+  }
+
+.vertical-tabs-menu {
+  flex: 0 0 auto;
+  /* Add styling for menu container */
+}
+
+.vertical-tabs-menu .tab-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.vertical-tabs-menu .tab-link:not(:first-child) {
+  margin-top: 16px;
+}
+
+.tab-link {
+  width: 50px;
+  height: 50px;
+}
+
+.vertical-tabs-menu .tab-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Add styling for the containing div */
+}
+
+
+.vertical-tabs-menu .tab-link .icon-container i {
+  font-size: 2em;
+  /* Add styling for the icon */
+}
+
+.vertical-tabs-menu .tab-link.active {
+  color: white;
+  background-color: #9945FF;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.vertical-tabs-menu .tab-link:hover {
+  background-color: #9945FF;
+    opacity: 50%;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vertical-tabs-body {
+  flex: 1 1 auto;
+  /* Add styling for content container */
+}
+/*
+  .vertical-tabs-body .tab-body {
+    display: none;
+    Add styling for each content panel 
+  }
+*/
+  .vertical-tabs-body .tab-body.active {
+    display: block;
+    /* Add styling for active content panel */
+  }
