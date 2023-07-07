@@ -99,8 +99,8 @@ avg.stake.plot <- plot_ly(avg.stake.plot.data[order(epoch, block_producing)],
 
 # validator age
 # delegator counts
-overview.vals <- merge(validator.data[, list(first_epoch = min(epoch), age = current.epoch - min(epoch)), by = voter_pubkey],
-                       validator.data[epoch == current.epoch, list(voter_pubkey, sol_staked, nstakers, avg_stake_size)],
+overview.vals <- merge(validator.stake[, list(first_epoch = min(epoch), age = current.epoch - min(epoch)), by = voter_pubkey],
+                       validator.stake[epoch == current.epoch, list(voter_pubkey, sol_staked, nstakers, avg_stake_size)],
                        by = "voter_pubkey")
 
 
@@ -150,24 +150,24 @@ new.vals.plot <- plot_ly(new.vals.data, x = ~epoch, y = ~n_new_validators,
          font = list(family = "Roboto Mono", size = 12))
 
 
-# retention
-retention.data <- all.data[, list(prop_active = mean(active), sol_active = sum(sol_stake*active)), by = list(epoch, first_epoch)]
-retention.data[, age_in_epochs := epoch - first_epoch]
-setorder(retention.data, age_in_epochs, first_epoch)
-
-#retention.activity.plot <- 
-plot_ly(retention.data[prop_active != 0 & sol_active != 0 & first_epoch != 338], 
-        x = ~age_in_epochs, y = ~prop_active, color = ~factor(first_epoch),
-        hovertext = ~paste("TBD"),
-        type = "scatter", mode = "lines") %>% 
-  layout(xaxis = list(title = "Epoch"),
-         yaxis = list(title = "Average Age in Epochs"),
-         showlegend = FALSE,
-         hovermode = "closest",
-         title = list(text = ""),
-         plot_bgcolor = "transparent", 
-         paper_bgcolor = "transparent", 
-         font = list(family = "Roboto Mono", size = 12))
+# retention - TBD
+# retention.data <- all.data[, list(prop_active = mean(active), sol_active = sum(sol_stake*active)), by = list(epoch, first_epoch)]
+# retention.data[, age_in_epochs := epoch - first_epoch]
+# setorder(retention.data, age_in_epochs, first_epoch)
+# 
+# #retention.activity.plot <- 
+# plot_ly(retention.data[prop_active != 0 & sol_active != 0 & first_epoch != 338], 
+#         x = ~age_in_epochs, y = ~prop_active, color = ~factor(first_epoch),
+#         hovertext = ~paste("TBD"),
+#         type = "scatter", mode = "lines") %>% 
+#   layout(xaxis = list(title = "Epoch"),
+#          yaxis = list(title = "Average Age in Epochs"),
+#          showlegend = FALSE,
+#          hovermode = "closest",
+#          title = list(text = ""),
+#          plot_bgcolor = "transparent", 
+#          paper_bgcolor = "transparent", 
+#          font = list(family = "Roboto Mono", size = 12))
 
 
 
@@ -219,7 +219,7 @@ nakamoto.time.plot <- plot_ly(all.nakamoto,
 # THE MAP
 
 # validator % of total vs. staker gini (current epoch)
-current.val.data <- validator.data[epoch == current.epoch]
+current.val.data <- validator.stake[epoch == current.epoch]
 current.val.data[, sol_percent := sum(sol_staked)/sum(current.val.data$sol_staked)*100, by = voter_pubkey]
 
 staker.gini.vs.prop.plot <- plot_ly(current.val.data, 
@@ -291,7 +291,7 @@ met.gini.token <- round(all.gini[epoch == current.epoch & variable == "by SOL St
 "Gini (Token)"
 met.gini.country <- round(all.gini[epoch == current.epoch & variable == "by Country"]$value, 2)
 "Gini (Country)"
-met.staker.gini <- round(mean(validator.data[epoch == current.epoch]$gini_coefficient, na.rm = TRUE), 2)
+met.staker.gini <- round(mean(validator.stake[epoch == current.epoch]$gini_coefficient, na.rm = TRUE), 2)
 "Avg Staker Gini"
 
 
@@ -300,271 +300,15 @@ save(current.epoch,
      n.active.vals, n.inactive.vals, nval.by.epoch.plot, 
      total.stake, avg.stake, total.stake.plot, avg.stake.plot,
      met.total.stake, met.active.rate, met.active10.rate, met.net.sol, met.net.validators,
+     met.nakamoto.token, met.nakamoto.country, met.gini.token, met.gini.country, met.staker.gini,
      
      new.vals.plot, avg.age.plot,
+     overview.vals,
      # decentralization
      gini.time.plot, nakamoto.time.plot,
      staker.gini.vs.prop.plot,
      staker.val.gini.distr,
      validator_stake_coords_463,
      file = "data.RData")
-
-
-# Reference Objects ----
-ecosystem_sol_stake_stats_by_epoch <- num_sol_staked(ecoappdata) %>% data.table()
-ecosystem_sol_stake_stats_by_epoch_with_churn <- ecosystem_10epoch_churn(ecoappdata) %>% data.table()
-
-ecosystem_sol_stake_stats_by_epoch_recently_active <- num_sol_staked_last10(ecoappdata) %>% data.table()
-ecosystem_sol_stake_stats_by_epoch_country <- num_sol_staked_by_country(ecoappdata) %>% data.table()
-
-ecosystem_gini_by_epoch <- get_gini_currents(ecoappdata) %>% data.table()
-ecosystem_gini_by_epoch_recently_active <- get_gini_recent(ecoappdata) %>% data.table()
-ecosystem_gini_by_epoch_country <- get_current_gini_by_country(ecoappdata) %>% data.table()
-
-ecosystem_software_stats_by_epoch <- get_current_software_stats(ecoappdata) %>% data.table()
-
-validator_10epoch_staker_churn <- get_10epoch_staker_churn(validator_stake) %>% data.table()
-validator_10epoch_sol_stake_churn <- get_10epoch_sol_churn(validator_stake) %>% data.table()
-
-vote_rolling_attendance <- get_vote_avg10_attendance(validator_vote) %>% data.table()
-vote_profile <- get_vote_profile(validator_vote) %>% data.table()
-
-validator.data <- validator_stake %>% data.table()
-
-# //Reference Objects ----
-
-
-# now we do some crunching and formatting
-ecosystem_current_epoch <- ecosystem_sol_stake_stats_by_epoch[epoch == current.epoch]
-ecosystem_current_epoch[, sol_staked := paste0(round(total_stake/1000000), "MM")]
-
-ecosystem_current_epoch[, gini_token := round(ecosystem_gini_by_epoch[epoch == current.epoch]$gini, 2)]
-ecosystem_current_epoch[, gini_geo := round(ecosystem_gini_by_epoch_country[epoch == current.epoch]$country_gini, 2)]
-
-ecosystem_current_epoch[, active_rate_10 := round(ecosystem_sol_stake_stats_by_epoch_with_churn[epoch == current.epoch, list(active_rate = n_current_validators / n_validators)], 2)]
-ecosystem_current_epoch[, churn_10 := round(ecosystem_sol_stake_stats_by_epoch_with_churn[epoch == current.epoch]$churn_rate, 2)]
-
-
-
-
-last.10.any.active <- unique(all.data[epoch <= current.epoch & epoch > current.epoch - 10 & delinquent == FALSE]$voter_pubkey)
-
-
-validator.pubkeys <- unique(all.data[epoch <= current.epoch]$voter_pubkey)
-data.first.epoch <- min(all.data$epoch)
-
-#i <- "646hXimsiNv2wsTm8hSXpuVCYHePXoaTz5gbqxMo9s6N"
-all.data[, active := as.numeric(!delinquent == TRUE)]
-
-# add the correct node software to the epoch:
-all.data <- merge(all.data,
-                  ecosystem_software_stats_by_epoch[ismax == TRUE, list(epoch, max_software = modified_software_version)],
-                  by = "epoch", all.x = TRUE)
-# make a list of all software versions in order
-all.versions <- sort(unique(all.data$max_software))
-
-current.epoch.total.staked <- sum(all.data[epoch == current.epoch]$sol_stake)
-
-# we're going to loop through every validator (!) and make the data perfect
-by.validator.output <- lapply(validator.pubkeys, function(i) {
-  
-  print(i)
-  
-  this.val <- all.data[voter_pubkey == i]
-  setorder(this.val, epoch)
-  
-  val.last.epoch <- max(this.val$epoch)
-  
-  # what kind of validator is this?
-  # first epoch
-  val.info <- data.table(validator_status = ifelse(val.last.epoch != current.epoch, "Disabled", "Current"),
-                         first_epoch = ifelse(min(this.val$epoch) == data.first.epoch, paste0("<", data.first.epoch), min(this.val$epoch)),
-                         last_active_epoch = ifelse(max(this.val$epoch) == current.epoch, paste0("This Epoch"), max(this.val$epoch)),
-                         prop_active_epochs = paste0(round(mean(!this.val$delinquent)*100,1),"%"),
-                         attendence_last_10 = sum(!all.data[epoch %in% last.10.epochs & voter_pubkey == i]$delinquent),
-                         rolling_10_attendance = vote_rolling_attendance[epoch == current.epoch & voter_pubkey == i]$avg_10epoch_attendance,
-                         avg_per_slots_skipped = vote_rolling_attendance[epoch == current.epoch & voter_pubkey == i]$percent_slots_skipped_in_epoch
-  )
-  
-  
-  # now lets talk moneys
-  val.info[, total_staked := ifelse(current.epoch == val.last.epoch, round(this.val[epoch == current.epoch]$sol_stake), 0)]
-  val.info[, staked_prop  := ifelse(current.epoch == val.last.epoch, 
-                                    round(this.val[epoch == current.epoch]$sol_stake/current.epoch.total.staked, 4), 0)]
-  val.info[, max_staked   := paste0("Max Stake: ", format(round(this.val[sol_stake == max(sol_stake)]$sol_stake[1]), big.mark = ","), " SOL at Epoch ", min(this.val[sol_stake == max(sol_stake)]$epoch))]
-  
-  # are they on the current node?
-  # how long do they usually take to upgrade their node?
-  
-  # Get the current software version and check if it's up to date
-  current_version <- this.val[epoch == val.last.epoch, modified_software_version]
-  is_up_to_date <- current_version == this.val[epoch == val.last.epoch, max_software]
-  
-  # Check if the current version is up to date
-  if(is_up_to_date) {
-    text_string <- paste("Node Version: Current (", current_version, ")")
-  } else {
-    # Calculate the number of versions behind
-    versions_behind <- length(all.versions) - which(all.versions == current_version)
-    
-    # Get the last updated epoch
-    last_updated_epoch <- max(this.val[modified_software_version != current_version & epoch <= current.epoch, epoch])
-    
-    # Generate the text string
-    text_string <- paste0("Node Version: ", current_version, " (", versions_behind, " versions behind, last update in epoch ", last_updated_epoch, ")")
-  }
-  
-  val.info[, node_version := current_version]
-  val.info[, node_current := current_version]
-  val.info[, node_uptodate := text_string]
-  
-  # where are they located? have they moved around?
-  c.location = this.val[epoch == current.epoch]$country
-  
-  val.info[, current_location := paste0("Location: ", c.location, " (for ", 
-                                        length(this.val[!is.na(country)]$country) - max(which(this.val[!is.na(country)]$country != c.location)),
-                                        " epochs)")]
-  p.locations <- this.val[, .N, by = country][country != c.location][order(-N)]
-  
-  if(nrow(p.locations) > 1) {
-    val.info[, previous_locations := paste0("Previous Locations (#epochs): ", 
-                                            paste(paste0(p.locations$country, " (", p.locations$N, ")"), collapse = ", "))]  
-  } else {
-    val.info[, previous_locations := "Previous Locations: none"]
-  }
-  
-  # validator stake metrics (delegators)
-  validator_10epoch_staker_churn
-  
-  val.info[]
-  
-  
-  # --PLOTS!
-  # -- money graph
-  # Create a color mapping based on the "active" column
-  this.val[, color := ifelse(active == 1, "#9945FF", "#BD8FFF")]
-  
-  # Plotting
-  fig <- plot_ly(this.val, x = ~epoch, y = ~sol_stake, type = "bar",
-                 marker = list(color = ~color),
-                 hovertemplate = ~paste("Epoch:", epoch, "<br>SOL Staked:", sol_stake, "<br>Active:", ifelse(active == 1, "Yes", "No")))
-  
-  sol.staked.plot <- 
-    fig %>% layout(
-      font = list(family = "Roboto Mono", size = 12),
-      xaxis = list(title = "Epoch"),
-      yaxis = list(title = "SOL Staked"),
-      showlegend = FALSE,
-      hovermode = "closest",
-      autosize = FALSE,
-      plot_bgcolor  = "transparent",
-      paper_bgcolor = "transparent",
-      margin = list(l = 75, r = 50, b = 75, t = 50, pad = 4),
-      modebar = list(remove = c("zoom2d", "pan2d", "select2d", "lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", "resetScale2d",
-                                "hoverClosestCartesian", "hoverCompareCartesian")),
-      bargap = 0,
-      legend = list(x = 0.5, y = 1.1, orientation = "h")
-    )
-  
-  
-  
-  last.10 <- data.table(epoch = last.10.epochs,
-                        active = this.val[epoch <= current.epoch & epoch > current.epoch - 10 & delinquent == FALSE,
-                                          as.numeric(last.10.epochs %in% epoch)])
-  # Define symbols based on activity
-  symbols <- ifelse(last.10$active == 1, "circle", "circle-open")
-  
-  last.10.plot <- plot_ly() %>%
-    add_trace(
-      data = last.10, 
-      x = ~epoch, y = ~rep(1, nrow(last.10)),  # set y to 1 for all rows
-      type = 'scatter', mode = 'markers',
-      marker = list(symbol = symbols, size = 15, color = "black"),
-      hoverinfo = 'text',
-      hovertext = ~paste('Epoch', epoch, ':', ifelse(active == 1, 'Active', 'Not Active'))
-    ) %>%
-    layout(
-      xaxis = list(title = "", showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),  # hide x axis labels
-      yaxis = list(title = "", showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE, range = c(0.5, 1.5)),
-      showlegend = FALSE,
-      plot_bgcolor = 'rgba(0,0,0,0)', # transparent background
-      hoverlabel = list(bgcolor = 'white', font = list(family = "Roboto Mono")), # hover label background color
-      autosize = TRUE,
-      margin = list(l = 1, r = 1, b = 1, t = 1),
-      # add annotations for each epoch
-      annotations = lapply(1:nrow(last.10), function(i) {
-        list(
-          x = last.10$epoch[i],
-          y = 0.95,
-          text = last.10$epoch[i],
-          xref = 'x',
-          yref = 'y',
-          font = list(family = 'Roboto Mono', size = 12, color = 'black'),
-          showarrow = FALSE
-        )
-      })
-    ) %>%
-    config(displayModeBar = FALSE) # disable zoom and other toolbar options
-  
-  to.return <- list(val.info = val.info,
-                    sol.staked.plot = sol.staked.plot,
-                    last.10.plot = last.10.plot)
-  
-  return(to.return)
-  
-})
-
-names(last.10.plots) <- last.10.any.active
-
-epoch.table.data <- ecosystem_sol_stake_stats_by_epoch_with_churn[epoch <= current.epoch]
-epoch.table.data[, prop_current_stake := current_stake / total_stake]
-epoch.table.data[, prop_current_validators := n_current_validators / n_validators]
-
-epoch.table.data <- merge(epoch.table.data,
-                          ecosystem_gini_by_epoch,
-                          by = "epoch", all.x = TRUE)
-
-epoch.table.data <- merge(epoch.table.data,
-                          ecosystem_gini_by_epoch_country,
-                          by = "epoch", all.x = TRUE)
-setorder(epoch.table.data, -epoch)
-epoch.table.data[, stake_epoch_delta := c(diff(total_stake), 0)]
-epoch.table.data[, validator_epoch_delta := c(diff(n_validators), 0)]
-
-epoch.table.data <- merge(epoch.table.data,
-                          ecosystem_software_stats_by_epoch[ismax == TRUE, list(epoch, n_current_node = n)],
-                          by = "epoch", all.x = TRUE)
-
-epoch.table <- epoch.table.data[, list(epoch, 
-                                       sol_staked = paste0(round(total_stake/1000000), "MM"),
-                                       stake_epoch_delta = paste0(round(stake_epoch_delta/1000000, 2), "MM"),
-                                       prop_current_stake,
-                                       n_validators,
-                                       validator_epoch_delta,
-                                       prop_current_validators = round(prop_current_validators, 2),
-                                       prop_on_max_node = round(n_current_node / n_validators, 3),
-                                       churn_rate = round(churn_rate, 2),
-                                       gini = round(gini, 2),
-                                       country_gini = round(country_gini, 2))]
-
-save(
-  validator.table,
-  last.10.plots,
-  epoch.table,
-  ecosystem_current_epoch,
-  validator.pubkeys,
-  file = "data.RData")
-
-
-
-
-
-
-
-
-all.data[epoch == current.epoch, .N, by = voter_pubkey][N != 1]
-all.data[voter_pubkey == "2ayMCC4aizr8RGg5ptXYqu8uoxW1whNek1hE1zaAd58z" & epoch == current.epoch]
-
-
 
 

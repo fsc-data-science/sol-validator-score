@@ -2,9 +2,11 @@ library(shiny)
 library(data.table)
 library(reactable)
 library(shinyWidgets)
+library(plotly)
+library(leaflet)
 
 #if(Sys.info()[["user"]] == "rstudio-connect") {
-load("data.Rdata")
+load("data.RData")
 
 corr.plot.choices <- data.table(
   table_name = c("first_epoch", "age", "sol_staked", "nstakers", "avg_stake_size", "equal"),
