@@ -1,4 +1,5 @@
 library(plumber)
+library(httr)
 library(shroomDK)
 library(dplyr)
 library(plotly)
@@ -75,15 +76,15 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
 
 
 #* Return 
+#* @serializer rds
 #* @get /saved_ecosystem_appdata
 function(){
-  tryCatch({
-    ecoappdata <- readRDS("001_latest_save.rds")
-  }, error = function(e){
+ if(!file.exists("001_latest_save.rds")){
     stop("No 001_latest_save.rds found in server, Post ecosystem_appdata with overwrite_save = TRUE")
-  })
-  
-  return(ecoappdata)
+ } else {
+   rds_object <- readRDS("001_latest_save.rds")
+   return(rds_object)
+ }
 }
 
 # Validator Stake Data ----
@@ -107,15 +108,15 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
 }
 
 #* Return 
+#* @serializer rds
 #* @get /saved_validator_staker_stats
 function(){
-  tryCatch({
-    validator_stake <- readRDS("003_latest_save.rds")
-  }, error = function(e){
+  if(!file.exists("003_latest_save.rds")){
     stop("No 003_latest_save.rds found in server, Post validator_staker_stats with overwrite_save = TRUE")
-  })
-  
-  return(validator_stake)
+  } else {
+    rds_object <- readRDS("003_latest_save.rds")
+    return(rds_object)
+  }
 }
 
 # Validator Vote Data ----
@@ -139,21 +140,14 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
 }
 
 #* Return 
+#* @serializer rds
 #* @get /saved_validator_vote_stats
 function(){
-  tryCatch({
-    validator_vote <- readRDS("005_latest_save.rds")
-  }, error = function(e){
+  if(!file.exists("005_latest_save.rds")){
     stop("No 005_latest_save.rds found in server, Post validator_vote_stats with overwrite_save = TRUE")
-  })
-  
-  return(validator_vote)
+  } else {
+    rds_object <- readRDS("005_latest_save.rds")
+    return(rds_object)
+  }
 }
 
-# Programmatically alter your API
-#* @plumber
-function(pr) {
-    pr %>%
-        # Overwrite the default serializer to return unboxed JSON
-        pr_set_serializer(serializer_unboxed_json())
-}
