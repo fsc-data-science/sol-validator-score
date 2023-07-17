@@ -150,18 +150,6 @@ function(){
   return(validator_vote)
 }
 
-# Plotly ---- 
-
-#* Plot a Plotly of Ecosystem Software Version
-#* @serializer htmlwidget
-#* @param try_latest Default TRUE, if FALSE,  
-#* @get /software_version_barchart
-function(try_latest = TRUE) {
-    rand <- rnorm(100)
-    hist(rand)
-}
-
-
 # Programmatically alter your API
 #* @plumber
 function(pr) {

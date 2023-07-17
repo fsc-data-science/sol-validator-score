@@ -14,8 +14,7 @@ get_validator_stake <- function(target_epoch = 460, api_key, data_source = "snow
   
   validator_stake_query <- {
     "
- 
-with target_epoch AS (
+ with target_epoch AS (
 -- change epoch here
 SELECT '__TARGET_EPOCH__' AS epoch FROM dual
 ),
@@ -89,7 +88,6 @@ from staker_sol_history
 
 SELECT *
   FROM staker_stats 
-;
 ;
 
   "

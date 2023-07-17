@@ -14,7 +14,6 @@ get_validator_vote <- function(target_epoch = 460, api_key, data_source = "snowf
   
   validator_vote_query <- {
     "
- 
 with target_epoch AS (
 -- change epoch here
 SELECT '__TARGET_EPOCH__' AS epoch FROM dual
