@@ -5,8 +5,10 @@ library(shinyWidgets)
 library(plotly)
 library(leaflet)
 
+source(file = "helper_functions.R")
+
 #if(Sys.info()[["user"]] == "rstudio-connect") {
-load("data.RData")
+load("all_outputs.RData")
 
 corr.plot.choices <- data.table(
   table_name = c("first_epoch", "age", "sol_staked", "nstakers", "avg_stake_size", "equal"),

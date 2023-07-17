@@ -109,15 +109,8 @@ function(input, output, session) {
     }
   })
   
-  
-  
-  
-  
-  
-  
-  
   output$themap <- renderLeaflet({
-    plot_coords(validator_stake_coords_463, color_col = "sol_staked", marker_text = "label")
+    plot_coords(validator_stake_coords, color_col = "sol_staked", marker_text = "label")
   })
   
   

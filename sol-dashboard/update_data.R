@@ -1,21 +1,31 @@
 library(dplyr)
-#setwd("../solana-validators/")
-# for testing pass to metric functions 
+library(data.table)
+library(httr)
+library(sf)
 
-setwd("..")
-source("002_ecosystem_metrics.R")
-source("004_validator_stake_metrics.R")
-source("006_validator_vote_metrics.R")
+source("helper_functions.R")
 
-all.data <- readRDS("001_latest_save.rds") %>% data.table()
-validator.stake <- readRDS("003_latest_save.rds") %>% data.table()
-validator.vote <- readRDS("005_latest_save.rds") %>% data.table()
+# Get latest RDS from API 
 
-setwd("sol-dashboard/")
+all.data <-  httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_ecosystem_appdata") %>% 
+  content() %>% unserialize() %>% data.table()
+
+ecoappdata <- all.data
+
+world <- read_sf("world-shapefile/")
+world_map = (world[ ,"name"])
+voter_coordinate <- ecoappdata[ , c("epoch","voter_pubkey", "longitude", "latitude")]
+voter_country <- ecoappdata[ , c("epoch","voter_pubkey", "country")]
+
+
+validator.stake <-  httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_validator_staker_stats") %>% 
+  content() %>% unserialize() %>% data.table()
+
+validator.vote <- httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_validator_vote_stats") %>% 
+  content() %>% unserialize() %>% data.table()
 
 token.gini <- get_gini_currents(ecoappdata) %>% data.table() %>% .[!is.na(gini)]
 country.gini <- get_current_gini_by_country(ecoappdata) %>% data.table() %>% .[!is.na(country_gini)]
-
 
 # add in name:
 all.data[, display_name := ifelse(!is.na(validator_name), 
@@ -31,7 +41,6 @@ all.data[, age_this_epoch := epoch - min(epoch), by = voter_pubkey]
 all.data[, first_epoch := min(epoch), by = voter_pubkey]
 
 current.epoch <- max(all.data[, .N, by = epoch][N > 100]$epoch)
-current.epoch <- 461
 last.10.epochs <- sort(unique(all.data[epoch <= current.epoch & epoch > current.epoch - 10]$epoch))
 
 n.active.vals <- all.data[active == 1 & epoch == current.epoch, uniqueN(voter_pubkey)]
@@ -170,8 +179,7 @@ new.vals.plot <- plot_ly(new.vals.data, x = ~epoch, y = ~n_new_validators,
 #          font = list(family = "Roboto Mono", size = 12))
 
 
-
-# decentralization!
+# decentralization --- 
 
 # gini's over time
 all.gini <- merge(token.gini, country.gini, by = "epoch") %>% melt.data.table(id.vars = "epoch")
@@ -294,6 +302,24 @@ met.gini.country <- round(all.gini[epoch == current.epoch & variable == "by Coun
 met.staker.gini <- round(mean(validator.stake[epoch == current.epoch]$gini_coefficient, na.rm = TRUE), 2)
 "Avg Staker Gini"
 
+validator_stake_coords <- add_coordinate_to_validator(validator_lvl_data = validator.stake, 
+                                                          voter_coordinate, 
+                                                          select_epoch = current.epoch)
+validator_stake_coords$label <- paste0("<b>Validator ...", 
+                                           substr(validator_stake_coords$voter_pubkey, start = 40, stop = 44), 
+                                           "</b><br># Stakers: ",
+                                           validator_stake_coords$nstakers, 
+                                           "<br>Total Stake: ",
+                                           format(floor(validator_stake_coords$sol_staked),
+                                                  big.mark = ","),
+                                           
+                                           '<br><a href="',
+                                           'https://solanacompass.com/validators/',
+                                           validator_stake_coords$voter_pubkey,
+                                           '">', 
+                                           'Compass Link',
+                                           '</a>'
+)
 
 # new vals by epoch + total new stake from them
 save(current.epoch, 
@@ -308,7 +334,7 @@ save(current.epoch,
      gini.time.plot, nakamoto.time.plot,
      staker.gini.vs.prop.plot,
      staker.val.gini.distr,
-     validator_stake_coords_463,
-     file = "data.RData")
+     validator_stake_coords,
+     file = "all_outputs.RData")
 
 
