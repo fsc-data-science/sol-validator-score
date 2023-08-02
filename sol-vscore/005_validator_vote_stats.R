@@ -19,53 +19,35 @@ with target_epoch AS (
 SELECT '__TARGET_EPOCH__' AS epoch FROM dual
 ),
 
-
-vote_history AS (
-select epoch_ingested_at as epoch, 
-epoch as last_active_epoch,
-vote_pubkey as voter_pubkey,
-votes,
-case when epoch_ingested_at = epoch then 'active'
-when (epoch_ingested_at - epoch) = 1 then 'deactivated'
-when (epoch_ingested_at - epoch) > 1 then 'currently_deactivated'
-else 'weird'
-end as active_category
-from 
-solana.silver.historical_vote_account
-WHERE epoch_ingested_at <= (SELECT epoch from target_epoch) 
-ORDER BY epoch_ingested_at ASC, voter_pubkey
-),
 vote_snapshot AS (
-select epoch_recorded as epoch, 
-epoch as last_active_epoch,
+select epoch, 
+last_epoch_active,
 vote_pubkey as voter_pubkey,
+node_pubkey,
 votes,
-case when epoch_recorded = epoch then 'active'
-when (epoch_recorded - epoch) = 1 then 'deactivated'
-when (epoch_recorded - epoch) > 1 then 'currently_deactivated'
+case when last_epoch_active = epoch then 'active'
+when (epoch - last_epoch_active) = 1 then 'deactivated'
+when (epoch - last_epoch_active) > 1 then 'currently_deactivated'
 else 'weird'
 end as active_category
 from 
-solana.silver.snapshot_vote_accounts
-WHERE epoch_recorded <= (SELECT epoch from target_epoch) 
-ORDER BY epoch_recorded ASC, voter_pubkey
+solana.core.fact_vote_accounts
+WHERE epoch <= (SELECT epoch from target_epoch) 
+ORDER BY epoch ASC, voter_pubkey
 ), 
 
 block_production as (
-select epoch, validator as voter_pubkey, num_leader_blocks, num_blocks_produced, start_slot, end_slot
-from solana_dev.silver.rpc_block_production
-),
+select epoch, node_pubkey, num_leader_slots as num_leader_blocks, num_blocks_produced, start_slot, end_slot
+from solana.core.fact_block_production   
+WHERE epoch <= (SELECT epoch from target_epoch) 
 
-combined_vote AS (
-SELECT * FROM vote_history UNION ALL (SELECT * FROM vote_snapshot)
 ),
-
 vote_with_block_production AS (
-select * from combined_vote LEFT JOIN block_production USING (epoch, voter_pubkey)
+select * from vote_snapshot LEFT JOIN block_production USING (epoch, node_pubkey)
 )
 
 select epoch, voter_pubkey,
-last_active_epoch, active_category,
+last_epoch_active as last_active_epoch, active_category,
  votes[0]:slot as minslot,
  votes[30]:slot as maxslot,
  maxslot - minslot as diffslot,

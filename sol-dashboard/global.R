@@ -15,6 +15,5 @@ corr.plot.choices <- data.table(
   selection_name = c("First Epoch", "Age in Epochs", "SOL Staked", "# Stakers", "Avg Stake Size", "Equal"),
   log_axis = c(FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
 
-
 plotly.height <- "300px"
 plotly.width <- "90%"

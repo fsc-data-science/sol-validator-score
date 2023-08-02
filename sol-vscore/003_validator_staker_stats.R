@@ -19,44 +19,30 @@ get_validator_stake <- function(target_epoch = 460, api_key, data_source = "snow
 SELECT '__TARGET_EPOCH__' AS epoch FROM dual
 ),
 
-staker_history AS (
-select epoch_ingested_at as epoch,
- activation_epoch, deactivation_epoch, 
- account_sol as active_stake,
- voter as voter_pubkey, 
- pubkey as stake_pubkey
-from solana.silver.historical_stake_account 
-WHERE epoch <= (select epoch from target_epoch)
-ORDER BY epoch_ingested_at ASC, voter_pubkey
-),
 staker_snapshot AS (
-select epoch_recorded as epoch,
+select epoch,
  activation_epoch, deactivation_epoch, 
  account_sol as active_stake,
  vote_pubkey as voter_pubkey, 
  stake_pubkey
-from solana.silver.snapshot_stake_accounts
+from solana.core.fact_stake_accounts
 WHERE epoch <= (select epoch from target_epoch)
 ORDER BY epoch ASC, voter_pubkey
 ), 
-
-combined_staker AS (
-SELECT * FROM staker_history UNION ALL (SELECT * FROM staker_snapshot)
-),
 
 voter_avg_stake AS (
  select epoch, voter_pubkey, 
 count(distinct(stake_pubkey)) as nstakers,
 sum(active_stake) as sol_staked, 
 COALESCE(sol_staked/NULLIF(nstakers,0),0) as avg_stake_size
-from combined_staker 
+from staker_snapshot 
 WHERE deactivation_epoch > epoch
 group by epoch, voter_pubkey
 ORDER BY epoch ASC
 ),
 
 combined_staker_with_dup_avg AS (
-select * from combined_staker LEFT JOIN voter_avg_stake USING (epoch, voter_pubkey)
+select * from staker_snapshot LEFT JOIN voter_avg_stake USING (epoch, voter_pubkey)
 ),
 
 staker_sol_history AS (
@@ -89,7 +75,6 @@ from staker_sol_history
 SELECT *
   FROM staker_stats 
 ;
-
   "
   }
   
