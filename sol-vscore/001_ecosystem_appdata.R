@@ -38,8 +38,7 @@ DATA_CENTER_HOST,
 DATA_CENTER_KEY, 
 DELINQUENT
 from solana.core.fact_validators   
-
-),
+)
 
 select epoch_active as epoch,
  voter_pubkey,

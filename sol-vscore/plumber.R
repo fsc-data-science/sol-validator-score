@@ -136,6 +136,7 @@ function(target_epoch, api_key, data_source = "data-science", overwrite_save = F
   if(overwrite_save){
     saveRDS(validator_vote, "005_latest_save.rds")
   }
+  
   return(validator_vote)
 }
 
