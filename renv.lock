@@ -1098,14 +1098,14 @@
     },
     "shroomDK": {
       "Package": "shroomDK",
-      "Version": "0.2.1",
+      "Version": "0.2.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "httr",
         "jsonlite"
       ],
-      "Hash": "48901044139fbef223fc671f31473e2f"
+      "Hash": "049eba5ef129a90e208fac132a5965c0"
     },
     "sodium": {
       "Package": "sodium",

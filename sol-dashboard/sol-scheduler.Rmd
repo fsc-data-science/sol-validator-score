@@ -1,0 +1,104 @@
+---
+title: "sol-validator-score-scheduler"
+author: "Charliemarketplace"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Context
+
+This markdowns runs a scheduler for solana validator score.
+
+# Parameters Updates 
+
+```{r}
+previous_outputs <- readRDS("all_outputs.rds")
+
+# assume within 10 epochs of top of chain 
+target_epoch <- previous_outputs$current.epoch + 10 
+api_key <- readLines("api_key.txt")
+
+url_eco <- paste0("https://science.flipsidecrypto.xyz/sol-vscore-api/ecosystem_appdata?target_epoch=",
+               target_epoch,
+               "&api_key=",
+               api_key,
+               "&data_source=data-science&overwrite_save=true&from_previous=true")
+
+url_staker <- paste0("https://science.flipsidecrypto.xyz/sol-vscore-api/validator_staker_stats?target_epoch=",
+               target_epoch,
+               "&api_key=",
+               api_key,
+               "&data_source=data-science&overwrite_save=true&from_previous=true")
+
+url_vote <- paste0("https://science.flipsidecrypto.xyz/sol-vscore-api/validator_vote_stats?target_epoch=",
+               target_epoch,
+               "&api_key=",
+               api_key,
+               "&data_source=data-science&overwrite_save=true&from_previous=true")
+
+```
+
+# Request Updates 
+
+Trycatch post requests to update data. And when it works, resave latest data.
+
+```{r, warning=FALSE, message=FALSE}
+library(httr)
+
+# try once 
+tryCatch({
+  eco_check <- httr::POST(url_eco)
+  if(eco_check$status_code != 200){
+    eco_check <- httr::POST(url_eco)
+  }
+  if(content(eco_check) != "Data updated & available by GET"){
+    warning("Issue with eco-check")
+  } else { 
+    print("Epoch updated")
+    }
+}, error = function(e){
+  print("Issue with the eco-check")
+})
+
+tryCatch({
+  staker_check <- httr::POST(url_staker)
+  if(staker_check$status_code != 200){
+    staker_check <- httr::POST(url_staker)
+  }
+  if(content(staker_check) != "Data updated & available by GET"){
+    warning("Issue with staker-check")
+  } else { 
+    print("Epoch updated")
+    }
+}, error = function(e){
+  print("Issue with the staker-check")
+})
+
+tryCatch({
+  voter_check <- httr::POST(url_vote)
+  if(voter_check$status_code != 200){
+    voter_check <- httr::POST(url_vote)
+  }
+  if(content(voter_check) != "Data updated & available by GET"){
+    warning("Issue with voter-check")
+  } else { 
+    print("Epoch updated")
+    }
+}, error = function(e){
+  print("Issue with the voter-check")
+})
+
+# Run the update 
+source("update_data.R")
+
+latest_update <- readRDS("all_outputs.rds")
+
+if(previous_outputs$current.epoch >= latest_update$current.epoch){
+  print("Epoch updated")
+} else {
+  print("Epoch not updated, see logs.")
+}
+
+```

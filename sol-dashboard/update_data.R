@@ -2,30 +2,29 @@ library(dplyr)
 library(data.table)
 library(httr)
 library(sf)
+library(plotly)
 
 source("helper_functions.R")
 
 # Get latest RDS from API 
 
+# Get latest RDS from API 
+
 all.data <-  httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_ecosystem_appdata") %>% 
-  content() %>% unserialize() %>% data.table()
+  content() %>% unserialize() %>% data.table() %>% unique()
 
-ecoappdata <- all.data
-
-world <- read_sf("world-shapefile/")
-world_map = (world[ ,"name"])
-voter_coordinate <- ecoappdata[ , c("epoch","voter_pubkey", "longitude", "latitude")]
-voter_country <- ecoappdata[ , c("epoch","voter_pubkey", "country")]
+voter_coordinate <- all.data[ , c("epoch","voter_pubkey", "longitude", "latitude")]
+voter_country <- all.data[ , c("epoch","voter_pubkey", "country")]
 
 
 validator.stake <-  httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_validator_staker_stats") %>% 
-  content() %>% unserialize() %>% data.table()
+  content() %>% unserialize() %>% data.table() %>% unique()
 
 validator.vote <- httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_validator_vote_stats") %>% 
-  content() %>% unserialize() %>% data.table()
+  content() %>% unserialize() %>% data.table() %>% unique()
 
-token.gini <- get_gini_currents(ecoappdata) %>% data.table() %>% .[!is.na(gini)]
-country.gini <- get_current_gini_by_country(ecoappdata) %>% data.table() %>% .[!is.na(country_gini)]
+token.gini <- get_gini_currents(all.data) %>% data.table() %>% .[!is.na(gini)]
+country.gini <- get_current_gini_by_country(all.data) %>% data.table() %>% .[!is.na(country_gini)]
 
 # add in name:
 all.data[, display_name := ifelse(!is.na(validator_name), 
@@ -112,10 +111,10 @@ overview.vals <- merge(validator.stake[, list(first_epoch = min(epoch), age = cu
                        validator.stake[epoch == current.epoch, list(voter_pubkey, sol_staked, nstakers, avg_stake_size)],
                        by = "voter_pubkey")
 
-
 overview.vals <- merge(overview.vals,
                        all.data[epoch == current.epoch, list(voter_pubkey, display_name)],
                        by = "voter_pubkey")
+
 overview.vals[, equal := 1]
 
 # Validator Age & Newness
@@ -158,27 +157,6 @@ new.vals.plot <- plot_ly(new.vals.data, x = ~epoch, y = ~n_new_validators,
          legend = list(orientation = "h", y = 1.1),
          font = list(family = "Roboto Mono", size = 12))
 
-
-# retention - TBD
-# retention.data <- all.data[, list(prop_active = mean(active), sol_active = sum(sol_stake*active)), by = list(epoch, first_epoch)]
-# retention.data[, age_in_epochs := epoch - first_epoch]
-# setorder(retention.data, age_in_epochs, first_epoch)
-# 
-# #retention.activity.plot <- 
-# plot_ly(retention.data[prop_active != 0 & sol_active != 0 & first_epoch != 338], 
-#         x = ~age_in_epochs, y = ~prop_active, color = ~factor(first_epoch),
-#         hovertext = ~paste("TBD"),
-#         type = "scatter", mode = "lines") %>% 
-#   layout(xaxis = list(title = "Epoch"),
-#          yaxis = list(title = "Average Age in Epochs"),
-#          showlegend = FALSE,
-#          hovermode = "closest",
-#          title = list(text = ""),
-#          plot_bgcolor = "transparent", 
-#          paper_bgcolor = "transparent", 
-#          font = list(family = "Roboto Mono", size = 12))
-
-
 # decentralization --- 
 
 # gini's over time
@@ -199,8 +177,8 @@ gini.time.plot <- plot_ly(all.gini,
          paper_bgcolor = "transparent", 
          font = list(family = "Roboto Mono", size = 12))
 
-token.nakamoto <- get_nakamoto_currents(ecoappdata) %>% data.table() %>% .[!is.na(nakamoto)]
-country.nakamoto <- get_current_nakamoto_by_country(ecoappdata) %>% data.table() %>% .[!is.na(country_nakamoto)]
+token.nakamoto <- get_nakamoto_currents(all.data) %>% data.table() %>% .[!is.na(nakamoto)]
+country.nakamoto <- get_current_nakamoto_by_country(all.data) %>% data.table() %>% .[!is.na(country_nakamoto)]
 
 all.nakamoto <- merge(token.nakamoto, country.nakamoto, by = "epoch") %>% 
   melt.data.table(id.vars = "epoch")
@@ -208,9 +186,9 @@ all.nakamoto <- merge(token.nakamoto, country.nakamoto, by = "epoch") %>%
 all.nakamoto[, variable := ifelse(variable == "nakamoto", "by SOL Staked", "by Country")]
 
 nakamoto.time.plot <- plot_ly(all.nakamoto, 
-                          x = ~epoch, y = ~value, color = ~variable, colors = c("#14F195", "#9945FF"),
-                          hovertext = ~paste("Epoch:", epoch, "<br>GINI: ", value),
-                          type = "scatter", mode = "lines") %>% 
+                              x = ~epoch, y = ~value, color = ~variable, colors = c("#14F195", "#9945FF"),
+                              hovertext = ~paste("Epoch:", epoch, "<br>GINI: ", value),
+                              type = "scatter", mode = "lines") %>% 
   layout(xaxis = list(title = "Epoch"),
          yaxis = list(title = "Nakamoto Coefficient"),
          showlegend = TRUE,
@@ -231,10 +209,10 @@ current.val.data <- validator.stake[epoch == current.epoch]
 current.val.data[, sol_percent := sum(sol_staked)/sum(current.val.data$sol_staked)*100, by = voter_pubkey]
 
 staker.gini.vs.prop.plot <- plot_ly(current.val.data, 
-        x = ~sol_percent, 
-        y = ~gini_coefficient, 
-        type = "scatter", mode = "markers",
-        marker = list(color = "#9945FF")) %>%
+                                    x = ~sol_percent, 
+                                    y = ~gini_coefficient, 
+                                    type = "scatter", mode = "markers",
+                                    marker = list(color = "#9945FF")) %>%
   layout(xaxis = list(title = "% of Total SOL Staked", type = "log"),
          yaxis = list(title = "Gini", type = "log"),
          showlegend = FALSE,
@@ -246,8 +224,8 @@ staker.gini.vs.prop.plot <- plot_ly(current.val.data,
 
 # like a histogram with within validator gini??
 staker.val.gini.distr <- plot_ly(data = current.val.data, x = ~gini_coefficient, 
-        type = "histogram",
-        marker = list(color = "#9945FF")) %>%
+                                 type = "histogram",
+                                 marker = list(color = "#9945FF")) %>%
   layout(xaxis = list(title = "Gini for # Stakers with Validators"),
          yaxis = list(title = "# of Validators"),
          showlegend = FALSE,
@@ -303,38 +281,53 @@ met.staker.gini <- round(mean(validator.stake[epoch == current.epoch]$gini_coeff
 "Avg Staker Gini"
 
 validator_stake_coords <- add_coordinate_to_validator(validator_lvl_data = validator.stake, 
-                                                          voter_coordinate, 
-                                                          select_epoch = current.epoch)
+                                                      voter_coordinate, 
+                                                      select_epoch = current.epoch)
 validator_stake_coords$label <- paste0("<b>Validator ...", 
-                                           substr(validator_stake_coords$voter_pubkey, start = 40, stop = 44), 
-                                           "</b><br># Stakers: ",
-                                           validator_stake_coords$nstakers, 
-                                           "<br>Total Stake: ",
-                                           format(floor(validator_stake_coords$sol_staked),
-                                                  big.mark = ","),
-                                           
-                                           '<br><a href="',
-                                           'https://solanacompass.com/validators/',
-                                           validator_stake_coords$voter_pubkey,
-                                           '">', 
-                                           'Compass Link',
-                                           '</a>'
+                                       substr(validator_stake_coords$voter_pubkey, start = 40, stop = 44), 
+                                       "</b><br># Stakers: ",
+                                       validator_stake_coords$nstakers, 
+                                       "<br>Total Stake: ",
+                                       format(floor(validator_stake_coords$sol_staked),
+                                              big.mark = ","),
+                                       
+                                       '<br><a href="',
+                                       'https://solanacompass.com/validators/',
+                                       validator_stake_coords$voter_pubkey,
+                                       '">', 
+                                       'Compass Link',
+                                       '</a>'
 )
 
 # new vals by epoch + total new stake from them
-save(current.epoch, 
-     n.active.vals, n.inactive.vals, nval.by.epoch.plot, 
-     total.stake, avg.stake, total.stake.plot, avg.stake.plot,
-     met.total.stake, met.active.rate, met.active10.rate, met.net.sol, met.net.validators,
-     met.nakamoto.token, met.nakamoto.country, met.gini.token, met.gini.country, met.staker.gini,
-     
-     new.vals.plot, avg.age.plot,
-     overview.vals,
-     # decentralization
-     gini.time.plot, nakamoto.time.plot,
-     staker.gini.vs.prop.plot,
-     staker.val.gini.distr,
-     validator_stake_coords,
-     file = "all_outputs.RData")
+all_outputs <-  list(current.epoch = current.epoch, 
+                     n.active.vals = n.active.vals,
+                     n.inactive.vals = n.inactive.vals,
+                     nval.by.epoch.plot = nval.by.epoch.plot,
+                     total.stake = total.stake,
+                     avg.stake =avg.stake,
+                     total.stake.plot = total.stake.plot,
+                     avg.stake.plot = avg.stake.plot,
+                     met.total.stake = met.total.stake, 
+                     met.active.rate = met.active.rate,
+                     met.active10.rate =met.active10.rate,
+                     met.net.sol =met.net.sol,
+                     met.net.validators = met.net.validators,
+                     met.nakamoto.token = met.nakamoto.token,
+                     met.nakamoto.country = met.nakamoto.country,
+                     met.gini.token = met.gini.token,
+                     met.gini.country = met.gini.country,
+                     met.staker.gini = met.staker.gini,
+                     new.vals.plot = new.vals.plot,
+                     avg.age.plot = avg.age.plot,
+                     overview.vals = overview.vals,
+                     gini.time.plot = gini.time.plot,
+                     nakamoto.time.plot = nakamoto.time.plot,
+                     staker.gini.vs.prop.plot = staker.gini.vs.prop.plot,
+                     staker.val.gini.distr = staker.val.gini.distr,
+                     validator_stake_coords = validator_stake_coords
+)
 
+# Saving item as list in RDS is more compressed & able to be passed via APIs 
+  saveRDS(all_outputs, "all_outputs.rds")
 

@@ -10,13 +10,15 @@
 #' @import shroomDK
 #' @export
 
-get_validator_stake <- function(target_epoch = 460, api_key, data_source = "snowflake_default"){
+get_validator_stake <- function(min_epoch = 0, target_epoch = 460, api_key, data_source = "snowflake_default"){
   
   validator_stake_query <- {
     "
- with target_epoch AS (
+  with target_epoch AS (
 -- change epoch here
-SELECT '__TARGET_EPOCH__' AS epoch FROM dual
+SELECT '__TARGET_EPOCH__' AS epoch, 
+       '__MIN_EPOCH__' as min_epoch
+FROM dual
 ),
 
 staker_snapshot AS (
@@ -26,7 +28,8 @@ select epoch,
  vote_pubkey as voter_pubkey, 
  stake_pubkey
 from solana.core.fact_stake_accounts
-WHERE epoch <= (select epoch from target_epoch)
+WHERE epoch <= (select epoch from target_epoch) 
+AND epoch >= (select min_epoch from target_epoch)
 ORDER BY epoch ASC, voter_pubkey
 ), 
 
@@ -79,6 +82,7 @@ SELECT *
   }
   
   validator_stake_query <- gsub("__TARGET_EPOCH__", target_epoch, validator_stake_query)
+  validator_stake_query <- gsub("__MIN_EPOCH__", min_epoch, validator_stake_query)
   
   # only certain API keys work on alternative sources.
   shroomDK::auto_paginate_query(query = validator_stake_query, 

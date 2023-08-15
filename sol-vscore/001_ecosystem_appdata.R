@@ -11,13 +11,15 @@
 #' @import shroomDK
 #' @export
 
-get_ecosystem_appdata <- function(target_epoch = 460, api_key, data_source = "snowflake_default"){
+get_ecosystem_appdata <- function(min_epoch = 0, target_epoch = 460, api_key, data_source = "snowflake_default"){
   
   ecosystem_appdata_query <- {
   "
   with target_epoch AS (
 -- change epoch here
-SELECT '__TARGET_EPOCH__' AS epoch FROM dual
+SELECT '__TARGET_EPOCH__' AS epoch, 
+       '__MIN_EPOCH__' as min_epoch
+FROM dual
 ),
 
 snapshot_appdata AS (
@@ -37,7 +39,9 @@ ACTIVE_STAKE/POW(10,9) as sol_stake,
 DATA_CENTER_HOST, 
 DATA_CENTER_KEY, 
 DELINQUENT
-from solana.core.fact_validators   
+from solana.core.fact_validators
+where epoch_active <= (select epoch from target_epoch)
+AND epoch_active >= (select min_epoch from target_epoch)
 )
 
 select epoch_active as epoch,
@@ -55,12 +59,12 @@ data_center_key, delinquent,
   ) AS count_active_last10
  FROM snapshot_appdata
  where voter_pubkey IS NOT NULL
-QUALIFY epoch_active <= (SELECT epoch from target_epoch)
 ;
   "
   }
   
   ecosystem_appdata_query <- gsub("__TARGET_EPOCH__", target_epoch, ecosystem_appdata_query)
+  ecosystem_appdata_query <- gsub("__MIN_EPOCH__", min_epoch, ecosystem_appdata_query)
   
   # only certain API keys work on alternative sources.
   shroomDK::auto_paginate_query(query = ecosystem_appdata_query, 

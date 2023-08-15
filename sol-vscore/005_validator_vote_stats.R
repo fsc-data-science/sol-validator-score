@@ -10,13 +10,15 @@
 #' @import shroomDK
 #' @export
 
-get_validator_vote <- function(target_epoch = 460, api_key, data_source = "snowflake_default"){
+get_validator_vote <- function(min_epoch = 0, target_epoch = 460, api_key, data_source = "snowflake_default"){
   
   validator_vote_query <- {
     "
-with target_epoch AS (
+  with target_epoch AS (
 -- change epoch here
-SELECT '__TARGET_EPOCH__' AS epoch FROM dual
+SELECT '__TARGET_EPOCH__' AS epoch,
+       '__MIN_EPOCH__' as min_epoch
+FROM dual
 ),
 
 vote_snapshot AS (
@@ -33,13 +35,15 @@ end as active_category
 from 
 solana.core.fact_vote_accounts
 WHERE epoch <= (SELECT epoch from target_epoch) 
+AND epoch >= (SELECT min_epoch from target_epoch)
 ORDER BY epoch ASC, voter_pubkey
 ), 
 
 block_production as (
 select epoch, node_pubkey, num_leader_slots as num_leader_blocks, num_blocks_produced, start_slot, end_slot
 from solana.core.fact_block_production   
-WHERE epoch <= (SELECT epoch from target_epoch) 
+WHERE epoch <= (SELECT epoch from target_epoch)
+AND epoch >= (SELECT min_epoch from target_epoch)
 
 ),
 vote_with_block_production AS (
@@ -61,6 +65,7 @@ HAVING voter_pubkey IS NOT NULL;
   }
   
   validator_vote_query <- gsub("__TARGET_EPOCH__", target_epoch, validator_vote_query)
+  validator_vote_query <- gsub("__MIN_EPOCH__", min_epoch, validator_vote_query)
   
   # only certain API keys work on alternative sources.
   shroomDK::auto_paginate_query(query = validator_vote_query, 
