@@ -6,7 +6,6 @@ library(plotly)
 library(sf)
 library(data.table)
 
-
 api_key <- readLines("api_key.txt")
 world <- read_sf("world-shapefile/")
 world_map = (world[ ,"name"])

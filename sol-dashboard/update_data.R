@@ -10,8 +10,12 @@ source("helper_functions.R")
 
 # Get latest RDS from API 
 
+# clean all.data for where 2 instances of a voter are pulled for same epoch 
+# selecy using min sol_stake 
 all.data <-  httr::GET("https://science.flipsidecrypto.xyz/sol-vscore-api/saved_ecosystem_appdata") %>% 
-  content() %>% unserialize() %>% data.table() %>% unique()
+  content() %>% unserialize() %>% data.table() %>% group_by(voter_pubkey, epoch) %>% 
+  filter(sol_stake == min(sol_stake)) %>%
+  ungroup() %>% data.table()
 
 voter_coordinate <- all.data[ , c("epoch","voter_pubkey", "longitude", "latitude")]
 voter_country <- all.data[ , c("epoch","voter_pubkey", "country")]
@@ -103,7 +107,6 @@ avg.stake.plot <- plot_ly(avg.stake.plot.data[order(epoch, block_producing)],
          plot_bgcolor = "transparent", 
          paper_bgcolor = "transparent", 
          font = list(family = "Roboto Mono", size = 12))
-#line = list(dash = c("solid", "dot", "dot"), width = c(2, 1, 1)))
 
 # validator age
 # delegator counts
@@ -112,8 +115,13 @@ overview.vals <- merge(validator.stake[, list(first_epoch = min(epoch), age = cu
                        by = "voter_pubkey")
 
 overview.vals <- merge(overview.vals,
-                       all.data[epoch == current.epoch, list(voter_pubkey, display_name)],
+                       all.data[epoch == current.epoch, list(voter_pubkey, 
+                                                             display_name, 
+                                                             country, latitude, longitude, details, 
+                                                             count_active_last10, modified_software_version)],
                        by = "voter_pubkey")
+
+overview.vals <- unique(overview.vals)
 
 overview.vals[, equal := 1]
 
@@ -199,10 +207,6 @@ nakamoto.time.plot <- plot_ly(all.nakamoto,
          paper_bgcolor = "transparent", 
          font = list(family = "Roboto Mono", size = 12))
 
-
-
-
-# THE MAP
 
 # validator % of total vs. staker gini (current epoch)
 current.val.data <- validator.stake[epoch == current.epoch]

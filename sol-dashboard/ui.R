@@ -22,6 +22,7 @@ fluidPage(
                tabsetPanel(
                  id = "maintabs", type = "pills", selected = "overview",
                  
+                 # Overview ----
                  tabPanel(
                    title = "OVERVIEW", 
                    value = "overview",
@@ -52,16 +53,16 @@ fluidPage(
                      ),
                      column(5,
                             div(class = "box",
-                                radioGroupButtons(
-                                  inputId = "solstakedradio",
-                                  label = NULL, 
-                                  choices = c("Total Stake", "Avg Stake")
-                                ),
-                                div(class = "box-text", 
-                                    paste0("Epoch ", current.epoch, ": ", format(round(total.stake), big.mark = ","), 
-                                           " SOL Staked (", format(round(avg.stake), big.mark = ","), " avg stake)")
-                                    ),
-                                plotlyOutput("solstaked", height = plotly.height, width = plotly.width)
+                                       radioGroupButtons(
+                                         inputId = "solstakedradio",
+                                         label = NULL, 
+                                         choices = c("Total Stake", "Avg Stake")
+                                       ),
+                                       div(class = "box-text", 
+                                           paste0("Epoch ", current.epoch, ": ", format(round(total.stake), big.mark = ","), 
+                                                  " SOL Staked (", format(round(avg.stake), big.mark = ","), " avg stake)")
+                                       ),
+                                       plotlyOutput("solstaked", height = plotly.height, width = plotly.width)
                             ), # close box
                             
                             div(class = "box",
@@ -120,6 +121,7 @@ fluidPage(
                    
                  ), # close overview panel
                  
+                 # Decentralization ----
                  tabPanel(title = "DECENTRALIZATION",
                           value = "decentralization",
                           fluidRow(
@@ -199,17 +201,128 @@ fluidPage(
                             
                           ) # close row
                  ),
-                 
+                 # Find Validator ----
                  tabPanel(title = "FIND A VALIDATOR",
                           value = "find",
-                          fluidRow(column(3),
-                                   column(6, 
-                                          br(), br(), br(),
-                                          div(class = "tbd", "Coming Soon: Search for a validator that meets your critera, then stake w them.")
+                          fluidRow(
+                            column(4, 
+                                   div(class = "box",
+                                       
+                                       div(class = "box-text",
+                                           radioGroupButtons(
+                                             inputId = "solstakefilterradio",
+                                             label = NULL, 
+                                             choices = c("Sol Stake (1,000s)")
+                                           ),
+                                           
+                                           numericRangeInput(inputId = "min_max_stake", 
+                                                             label = NULL,
+                                                             value = c(0, 10000),
+                                                             min = 0,
+                                                             max = 100000, 
+                                                             step = 10
+                                           )                                    
+                                       ),
+                                       
+                                      div(class = "box-text",
+                                          radioGroupButtons(
+                                            inputId = "nstakersfilterradio",
+                                            label = NULL, 
+                                            choices = c("# Stakers")
+                                          ),
+                                          
+                                          numericRangeInput(inputId = "min_max_nstakers", 
+                                                            label = NULL,
+                                                            value = c(1, 100000),
+                                                            min = 0,
+                                                            max = 200000, 
+                                                            step = 100
+                                          )                                    
+                                      ),
+                                      div(class = "box-text",
+                                          radioGroupButtons(
+                                            inputId = "countriesradio",
+                                            label = NULL, 
+                                            choices = c("Countries")
+                                          ),
+                                         
+                                          pickerInput(
+                                            inputId = "countries",
+                                            label = NULL,
+                                            choices = country_choices,
+                                            options = list(
+                                              `actions-box` = TRUE,
+                                              `selected-text-format` = "count > 1",
+                                              `count-selected-text` = "{0} options selected"
+                                            ), selected = country_choices,
+                                            multiple = TRUE
+                                          )
+                                      ),
+                                      div(class = "box-text",
+                                          radioGroupButtons(
+                                            inputId = "minattendanceradio",
+                                            label = NULL, 
+                                            choices = c("10 Epoch Attendance")
+                                          ),
+                                          
+                                          sliderInput(inputId = "min_attendance",
+                                                      label = NULL,
+                                                      min = 0,
+                                                      max = 10,
+                                                      value = 1,
+                                                      step = 1
+                                                      )
+                                      )
+                                          
+                                       ) # end box 
                                    ),
-                                   column(3)
-                          )
-                 ),
+                            column(6,
+                                   div(class = "box",
+                                       radioGroupButtons(
+                                         inputId = "mapradio",
+                                         label = NULL, 
+                                         choices = c("Validator Map")
+                                       ),
+                                       div(class = "box-text", "Zoom in to See More"),
+                                       leafletOutput("decentralized_map", height = plotly.height, width = plotly.width)
+                                   ), # close box
+                                   
+                                   div(class = "box",
+                                       radioGroupButtons(
+                                         inputId = "selectvalidatorsradio",
+                                         label = NULL, 
+                                         choices = c("Select Validators")
+                                       ),
+                                       reactableOutput("select_validators")
+                                                                                                       
+                                   ) # close box
+                                   
+                                   
+                            ), # close column 2 size 5
+                            
+                            column(2,
+                                   br(),br(),
+                                   div(class = "sidemetric",
+                                       div(class = "largemetric", met.total.stake),
+                                       div(class = "metricdesc", "Qualified Stake")),
+                                   
+                                   div(class = "sidemetric",
+                                       div(class = "largemetric", met.active.rate),
+                                       div(class = "metricdesc", "# Qualifying Validators")),
+                                   
+                                   div(class = "sidemetric",
+                                       div(class = "largemetric", met.active10.rate),
+                                       div(class = "metricdesc", "Avg Stake")),
+                                   
+                                   div(class = "sidemetric",
+                                       div(class = "largemetric", met.net.sol),
+                                       div(class = "metricdesc", "# Stakers"))
+                                   
+                            ) # close column 2
+                            
+                          ) # close boxes row
+                          
+                          ), # close overview panel
                  
                  tabPanel(title = "BY VALIDATOR",
                           value= "by_validator",

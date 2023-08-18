@@ -1,12 +1,5 @@
 function(input, output, session) {
   
-  # do it this way when choices is very long:
-  # updateSelectizeInput(session, inputId = 'validator', 
-  #                      choices = validator.pubkeys,
-  #                      selected = "AAZdEa1krazg48bTnydEsDzNmFrQPt6T7XxhfdQ65D2r", 
-  #                      server = TRUE)
-  
-  
   output$bpvalcounts <- renderPlotly({
     nval.by.epoch.plot
   })
@@ -22,7 +15,6 @@ function(input, output, session) {
   
   
   output$ageplot <- renderPlotly({
-    #c("# New Validators", "Validator Age", "Retention by Activity", "Retention by SOL"
     if(input$valageradio == "# New Validators") {
       new.vals.plot
     } else if(input$valageradio == "Validator Age") {
@@ -31,26 +23,14 @@ function(input, output, session) {
     
   })
   
-  
-  
-  
-  output$corrplot <- renderPlotly({
+    output$corrplot <- renderPlotly({
     xvar <- corr.plot.choices[selection_name == input$corr_x]$table_name
     yvar <- corr.plot.choices[selection_name == input$corr_y]$table_name
     sizevar <- corr.plot.choices[selection_name == input$corr_size]$table_name
     
     dolog.x <- corr.plot.choices[selection_name == input$corr_x]$log_axis
     dolog.y <- corr.plot.choices[selection_name == input$corr_y]$log_axis
-    #dolog.size <- corr.plot.choices[selection_name == input$corr_size]$log_axis
-    
-    # # normalize sizes:
-    # if(sizevar == "equal") {
-    #   size.var <- 1  
-    # } else {
-    #   size.var <- (overview.vals[[sizevar]] - min(overview.vals[[sizevar]])) / 
-    #     (max(overview.vals[[sizevar]]) - min(overview.vals[[sizevar]]))*10
-    # }
-    
+   
     # Create scatter plot
     plot_ly(overview.vals, 
             x = ~overview.vals[[xvar]], 
@@ -63,7 +43,6 @@ function(input, output, session) {
                             color = 'rgba(153, 69, 255, 1)',  # border
                             width = 1  # border width
                           ) )) %>%
-                          #size = ~log(overview.vals[[sizevar]]))) %>%
       layout(xaxis = list(title = input$corr_x, type = ifelse(dolog.x, "log", "linear")),
              yaxis = list(title = input$corr_y, type = ifelse(dolog.y, "log", "linear")),
              showlegend = FALSE,
@@ -73,7 +52,97 @@ function(input, output, session) {
     
   })
   
+  observe({
+  mms <<- input$min_max_stake  
+  mmn <<- input$min_max_nstakers
+  cc <<- input$countries
+  matt <<- input$min_attendance
+  })
   
+  filter_map_info <- reactive({
+
+   list(input$countries, input$min_max_nstakers, input$min_attendance, input$min_max_stake)
+    
+    map_info <- overview.vals
+    
+    map_info <- map_info %>% dplyr::filter(
+      country %in% input$countries & 
+      sol_staked >= (1e3 * input$min_max_stake[1]) &  
+      sol_staked <= (1e3 * input$min_max_stake[2]) &  
+      count_active_last10 >= input$min_attendance  
+    )
+    
+    map_info$label <- paste0("<b>Validator ...", 
+                                           substr(map_info$voter_pubkey, start = 40, stop = 44), 
+                             "</b><br># Stakers: ",
+                             map_info$nstakers, 
+                             "<br>Total Stake: ",
+                             format(floor(map_info$sol_staked),
+                                    big.mark = ","),
+                             "<br>Country: ",
+                             map_info$country,
+                             "<br>Software Version: ",
+                             map_info$modified_software_version,
+                             '<br><a href="',
+                             'https://solanacompass.com/validators/',
+                             map_info$voter_pubkey,
+                             '">', 
+                             'Compass Link',
+                             '</a>'
+    )
+    
+   map_info
+  })
+  
+  output$select_validators <- renderReactable({
+    
+    tbl_ <- filter_map_info()[ , c("voter_pubkey", "display_name", "age", 
+                                   "sol_staked", "nstakers", 
+                                   "avg_stake_size", "country",
+                                   "count_active_last10",
+                                   "modified_software_version")]
+   
+     reactable(tbl_[, 2:9],
+              columns = list(
+                display_name = colDef(
+                  name = "Voter", 
+                  cell = function(value, index) {
+                    # Render as a link
+                    url <- sprintf("https://solanacompass.com/validators/%s", tbl_[index, "voter_pubkey"], value)
+                    htmltools::tags$a(href = url, target = "_blank", as.character(value))
+                  }
+                ),
+                modified_software_version = colDef(
+                  name = "Software Version"
+                ),
+                count_active_last10 = colDef(
+                  name = "# Epochs Active (of last 10)"
+                ),
+                sol_staked = colDef(
+                  name = "Sol Staked",
+                  cell = function(value){
+                    format(round(value,2), big.mark   = ",")
+                  }
+                ),
+                nstakers = colDef(
+                  name = "Stakers",
+                  cell = function(value){
+                    format(round(value,2), big.mark   = ",")
+                  }
+                ),
+                avg_stake_size = colDef(
+                  name = "Avg Stake Size",
+                  cell = function(value){
+                    format(round(value,2), big.mark   = ",")
+                  }
+                ),
+                country = colDef(
+                  name = "Country"
+                )
+              )
+    )
+    
+  })
   
   output$gini_naka_plot <- renderPlotly({
     if(input$gininakaradio == "Gini") {
@@ -91,7 +160,6 @@ function(input, output, session) {
       "Validator Nakamoto Coefficient by SOL Staked and Location"
     }
   })
-  
   
   output$val_staker_gini_token <- renderPlotly({
     if(input$stakerginiradio == "Staker Gini vs Stake Share") {
@@ -112,6 +180,11 @@ function(input, output, session) {
   output$themap <- renderLeaflet({
     plot_coords(validator_stake_coords, color_col = "sol_staked", marker_text = "label")
   })
+  
+  output$decentralized_map <- renderLeaflet({
+    plot_coords(filter_map_info(), color_col = "sol_staked", marker_text = "label")
+    
+    })
   
   
 }
