@@ -332,6 +332,11 @@ all_outputs <-  list(current.epoch = current.epoch,
                      validator_stake_coords = validator_stake_coords
 )
 
-# Saving item as list in RDS is more compressed & able to be passed via APIs 
-  saveRDS(all_outputs, "all_outputs.rds")
+# Saving item as list in RDS is more compressed & able to be passed via APIs
+file.location <- ifelse(Sys.info()[["user"]] == "rstudio-connect",           
+      "/rstudio-data/sol_validator_score_all_outputs.rds",
+       "sol_validator_score_all_outputs.rds"
+)
 
+saveRDS(all_outputs, file = file.location)
+print(file.info(file.location))

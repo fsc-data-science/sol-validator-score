@@ -11,7 +11,11 @@ source(file = "helper_functions.R")
 # because Plumber serialization 50x the file size for some reason
 
 # returns a list (have to do it this way for serialization)
-all.outputs <- readRDS("all_outputs.rds")
+file.location <-  ifelse(Sys.info()[["user"]] == "rstudio-connect",           
+                         "/rstudio-data/sol_validator_score_all_outputs.rds",
+                         "sol_validator_score_all_outputs.rds")
+
+all.outputs <- readRDS(file.location)
 
 # Go through list and create the object with its own name
 lapply(names(all.outputs), function(i){

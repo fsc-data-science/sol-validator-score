@@ -92,8 +92,11 @@ tryCatch({
 
 # Run the update 
 source("update_data.R")
+file.location <-  ifelse(Sys.info()[["user"]] == "rstudio-connect",           
+                         "/rstudio-data/sol_validator_score_all_outputs.rds",
+                         "sol_validator_score_all_outputs.rds")
 
-latest_update <- readRDS("all_outputs.rds")
+latest_update <- readRDS(file.location)
 
 if(previous_outputs$current.epoch >= latest_update$current.epoch){
   print("Epoch updated")
